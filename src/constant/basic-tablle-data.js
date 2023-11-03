@@ -1279,6 +1279,8 @@ export const appointmentTable = [
     time: "1/01/2023",
     purpose: "Meeting with Daddy G.O",
     whoToSee: "Daddy G.O",
+    status: "Approved",
+    name: "David Collins",
   },
   {
     id: "2",
@@ -1286,6 +1288,8 @@ export const appointmentTable = [
     time: "1/01/2023",
     purpose: "Meeting with Daddy G.O",
     whoToSee: "Daddy G.O",
+    status: "Rejected",
+    name: "Femi Asiwaju",
   },
 ];
 
@@ -1296,5 +1300,68 @@ export const meetingsTable = [
     time: "01/12/2024",
     title: "Choir practice",
     venue: "Akoka",
+  },
+];
+
+export const firstTimersTable = [
+  {
+    id: "1",
+    name: "Tunde Famakinwa",
+    email: "Tfama@gmail.com",
+    phone: "08012345678",
+    gender: "Male",
+    dob: "01/12/2024",
+    department: "Logistics",
+  },
+  {
+    id: "2",
+    name: "Mike Okonkwo",
+    email: "MKO@gmail.com",
+    phone: "08012345678",
+    gender: "Male",
+    dob: "01/12/2024",
+    department: "Logistics",
+  },
+  {
+    id: "3",
+    name: "Minato Namikaze",
+    email: "flyineRaijin@gmail.com",
+    phone: "08012345678",
+    gender: "Male",
+    dob: "01/12/2024",
+    department: "Logistics",
+  },
+];
+
+export const membersTable = [
+  {
+    id: "1",
+    name: "Tunde Famakinwa",
+    email: "Tfama@gmail.com",
+    phone: "08012345678",
+    role: "Admin",
+    gender: "Male",
+    dob: "01/12/2024",
+    department: "Logistics",
+  },
+  {
+    id: "2",
+    name: "Mike Okonkwo",
+    email: "MKO@gmail.com",
+    phone: "08012345678",
+    role: "Admin",
+    gender: "Male",
+    dob: "01/12/2024",
+    department: "Logistics",
+  },
+  {
+    id: "3",
+    name: "Minato Namikaze",
+    email: "flyineRaijin@gmail.com",
+    phone: "08012345678",
+    role: "Admin",
+    gender: "Male",
+    dob: "01/12/2024",
+    department: "Logistics",
   },
 ];

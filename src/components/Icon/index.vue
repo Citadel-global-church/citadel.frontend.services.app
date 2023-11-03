@@ -4,7 +4,7 @@
   </span>
 </template>
 <script>
-import { Icon } from '@iconify/vue';
+import { Icon } from "@iconify/vue";
 export default {
   components: {
     Icon,
@@ -12,7 +12,7 @@ export default {
   props: {
     icon: {
       type: String,
-      default: 'heroicons-outline:home',
+      default: "heroicons-outline:home",
     },
   },
 };

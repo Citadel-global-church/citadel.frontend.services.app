@@ -27,7 +27,7 @@
           />
 
           <Button
-            icon="heroicons-outline:plus-sm"
+            icon="ri:user-add-line"
             text="Add Member"
             btnClass=" btn-primary font-normal btn-sm "
             iconClass="text-lg"
@@ -67,15 +67,6 @@
           :search-options="{
             enabled: true,
             externalQuery: searchTerm,
-          }"
-          :select-options="{
-            enabled: true,
-            selectOnCheckboxOnly: true, // only select when checkbox is clicked instead of the row
-            selectioninfoClass: 'table-input-checkbox',
-            selectionText: 'rows selected',
-            clearSelectionText: 'clear',
-            disableSelectinfo: true, // disable the select info-500 panel on top
-            selectAllByGroup: true, // when used in combination with a grouped table, add a checkbox in the header row to check/uncheck the entire group
           }"
         >
           <template v-slot:table-row="props">

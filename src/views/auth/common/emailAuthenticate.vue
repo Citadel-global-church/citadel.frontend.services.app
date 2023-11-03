@@ -10,18 +10,6 @@
       :error="tokenError"
     />
 
-    <Textinput
-      label="Password"
-      type="password"
-      placeholder="Type your password"
-      name="password"
-      v-model="password"
-      hasicon
-      classInput="h-[48px]"
-      required
-      :error="passwordError"
-    />
-
     <button
       :disabled="isLoading"
       type="submit"
@@ -55,7 +43,6 @@ import Textinput from "@/components/Textinput";
 
 const schema = yup.object({
   token: yup.string().required("Token is required"),
-  password: yup.string().required("Password is required"),
 });
 
 const { handleSubmit } = useForm({
@@ -63,7 +50,6 @@ const { handleSubmit } = useForm({
 });
 
 const { value: token, errorMessage: tokenError } = useField("token");
-const { value: password, errorMessage: passwordError } = useField("password");
 
 const router = useRouter();
 const route = useRoute();
@@ -73,9 +59,9 @@ const toast = useToast();
 const isLoading = computed(() => state.auth.loading);
 const isOtpLoading = computed(() => state.auth.loading);
 const isSuccess = computed(() => state.auth.validendsuccess);
-const isOtpSuccess = computed(() => state.auth.validinitsuccess);
-const resendCountdown = ref(0);
-const resendDisabled = ref(false);
+const isOtpSuccess = computed(() => state.auth.requestsuccess);
+const resendCountdown = ref(20);
+const resendDisabled = ref(true);
 
 const resendOTP = () => {
   // Implement your OTP resend logic here
@@ -95,8 +81,9 @@ const resendOTP = () => {
 };
 
 const handleOtp = () => {
-  dispatch("validateEmailInitiate", {
+  dispatch("requestOtp", {
     emailAddress,
+    grantType: "password",
   });
 };
 onMounted(() => {
@@ -126,6 +113,7 @@ onMounted(() => {
 const onSubmit = handleSubmit((values) => {
   dispatch("validateEmailComplete", {
     emailAddress,
+    password: values.token,
     ...values,
   });
 });
@@ -133,8 +121,10 @@ watch(isOtpSuccess, () => {
   resendOTP();
 });
 watch(isSuccess, () => {
-  toast.success("Sign up successful");
-  isSuccess.value && router.push(`/login`);
+  if (isSuccess.value) {
+    toast.success("Sign up successful");
+    isSuccess.value && router.push(`/`);
+  }
 });
 </script>
 

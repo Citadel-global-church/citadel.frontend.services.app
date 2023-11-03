@@ -17,10 +17,10 @@
           placeholder="Provide a middle name"
         />
         <Textinput
-          label="Surname"
+          label="Last name"
           type="text"
-          v-model="surname"
-          :error="surnameError"
+          v-model="lastName"
+          :error="lastNameError"
           placeholder="Provide a surnanme"
         />
         <div class="">
@@ -32,13 +32,6 @@
             placeholder="Provide an email address"
           />
         </div>
-        <Select
-          label="Role"
-          :options="roleOptions"
-          v-model="role"
-          :error="roleError"
-        />
-
         <Textinput
           label="Phone"
           type="text"
@@ -46,25 +39,47 @@
           :error="phoneNumberError"
           placeholder="Provide a phone number"
         />
+        <Select
+          label="Role"
+          :options="roles"
+          v-model="role"
+          :error="roleError"
+        />
       </div>
 
       <div class="text-right space-x-3 mt-8">
-        <Button type="submit" text="Save record" btnClass="btn-dark" />
+        <Button
+          type="submit"
+          text="Add member"
+          btnClass="btn-dark w-full disabled:opacity-50"
+          :disabled="loading"
+        />
       </div>
     </Card>
   </form>
 </template>
 <script setup>
-import { reactive } from "vue";
+import { reactive, computed, onMounted } from "vue";
 import { useField, useForm } from "vee-validate";
 import * as yup from "yup";
 import Button from "@/components/Button";
 import Card from "@/components/Card";
 import Textinput from "@/components/Textinput";
 import Select from "@/components/Select";
+import { useStore } from "vuex";
 
+const { state, dispatch } = useStore();
+onMounted(() => {
+  dispatch("getRoles");
+});
+const loading = computed(() => state.member.addloading);
+const roles = computed(() =>
+  state.member.roles.map((i) => {
+    return { value: i, label: i };
+  })
+);
 const formData = reactive({
-  surname: "",
+  lastName: "",
   firstname: "",
   middlename: "",
   role: "",
@@ -72,7 +87,7 @@ const formData = reactive({
   emailAddress: "",
 });
 const formDataSchema = yup.object().shape({
-  surname: yup.string().required("Surname is required"),
+  lastName: yup.string().required("lastName is required"),
   firstname: yup.string().required("Firstname is required"),
   middlename: yup.string(),
   role: yup.string().required("Please select a role"),
@@ -82,10 +97,6 @@ const formDataSchema = yup.object().shape({
     .email("Invalid email format")
     .required("Email Address is required"),
 });
-const roleOptions = [
-  { value: "admin", label: "Administrator" },
-  { value: "hod", label: "HOD" },
-];
 
 const { handleSubmit } = useForm({
   validationSchema: formDataSchema,
@@ -95,7 +106,7 @@ const { handleSubmit } = useForm({
 const { value: emailAddress, errorMessage: emailAddressError } =
   useField("emailAddress");
 
-const { value: surname, errorMessage: surnameError } = useField("surname");
+const { value: lastName, errorMessage: lastNameError } = useField("lastName");
 const { value: firstname, errorMessage: firstnameError } =
   useField("firstname");
 const { value: middlename, errorMessage: middlenameError } =
@@ -106,7 +117,10 @@ const { value: phoneNumber, errorMessage: phoneNumberError } =
   useField("phoneNumber");
 
 const onSubmit = handleSubmit((values) => {
-  console.log("🚀 ~ file: member-add.vue:163 ~ onSubmit ~ values:", values);
+  dispatch("addUser", {
+    ...values,
+    password: "Password@1234",
+  });
 });
 </script>
 <style lang=""></style>

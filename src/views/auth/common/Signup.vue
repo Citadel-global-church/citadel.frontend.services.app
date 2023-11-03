@@ -36,7 +36,7 @@
       :error="phoneNumberError"
       classInput="h-[48px]"
     />
-    <Textinput
+    <!-- <Textinput
       label="Password"
       type="password"
       placeholder="8+ chars, 1 capital or lower letter,1 number, 1 special char "
@@ -45,7 +45,7 @@
       :error="passwordError"
       hasicon
       classInput="h-[48px]"
-    />
+    /> -->
 
     <div class="flex items-start">
       <label class="cursor-pointer flex items-start">
@@ -122,13 +122,13 @@ const checkbox = ref(false);
 // Define a validation schema
 const schema = yup.object({
   emailAddress: yup.string().required("Email is required").email(),
-  password: yup
-    .string()
-    .required("Password is required")
-    .matches(
-      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/,
-      "Password must be at least 8 characters long and include at least one lowercase letter, one uppercase letter, one number, and one special character (@, $, !, %, *, ?, or &)"
-    ),
+  // password: yup
+  //   .string()
+  //   .required("Password is required")
+  //   .matches(
+  //     /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/,
+  //     "Password must be at least 8 characters long and include at least one lowercase letter, one uppercase letter, one number, and one special character (@, $, !, %, *, ?, or &)"
+  //   ),
   firstName: yup.string().required("First name is required"),
   lastName: yup.string().required("Last name is required"),
   phoneNumber: yup
@@ -153,7 +153,7 @@ const { value: firstName, errorMessage: firstNameError } =
 const { value: lastName, errorMessage: lastNameError } = useField("lastName");
 const { value: phoneNumber, errorMessage: phoneNumberError } =
   useField("phoneNumber");
-const { value: password, errorMessage: passwordError } = useField("password");
+// const { value: password, errorMessage: passwordError } = useField("password");
 
 // eslint-disable-next-line no-unused-vars
 const onSubmit = handleSubmit((values) => {

@@ -1,58 +1,69 @@
 <template>
   <form @submit.prevent="onSubmit" class="space-y-4">
-    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-      <CustomVueSelect
-        name="levelOfATS"
-        v-model="levelOfATS"
+    <ProfileInputSkeleton v-if="churchAffiliationsDataLoading" />
+
+    <div v-else class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <Select
+        label="Level Of ATS"
+        :options="levelOfATSMenu"
+        v-model.value="levelOfATS"
         :modelValue="levelOfATS"
         :error="levelOfATSError"
-        :options="levelOfATSMenu"
-        label="Level Of ATS"
-        @update:modelValue="defaultSelectedValue = $event"
+        classInput="!h-[40px]"
       />
 
-      <CustomVueSelect
-        name="isCharterMember"
-        v-model="isCharterMember"
-        :modelValue="isCharterMember"
-        :error="isCharterMemberError"
-        :options="isCharterMemberMenu"
+      <Select
         label="Charter Member"
-        @update:modelValue="defaultSelectedValue = $event"
+        :options="isCharterMemberMenu"
+        v-model.value="charteredMember"
+        :modelValue="charteredMember"
+        :error="charteredMemberError"
+        classInput="!h-[40px]"
       />
 
       <Textinput
-        v-if="Number(levelOfATS.value) >= 2 && isCharterMember.value"
+        v-if="
+          (Number(levelOfATS) >= 2 && charteredMember == true) ||
+          charteredMember == 'true'
+        "
         label="Charter Member Number"
         type="number"
         placeholder="Type your charter number"
-        name="charterMemberNumber"
-        v-model="charterMemberNumber"
-        :error="charterMemberNumberError"
+        name="charteredMemberNumber"
+        v-model="charteredMemberNumber"
+        :error="charteredMemberNumberError"
         classInput="h-[40px]"
       />
 
-      <CustomVueSelect
-        name="CIHZone"
-        v-model="CIHZone"
-        :modelValue="CIHZone"
-        :error="CIHZoneError"
-        :options="CIHZoneMenu"
+      <Select
         label="CIH Zone"
-        @update:modelValue="defaultSelectedValue = $event"
+        :options="CIHZoneMenu"
+        v-model.value="cihZone"
+        :modelValue="cihZone"
+        :error="cihZoneError"
+        classInput="!h-[40px]"
       />
 
       <Textinput
         label="Mountain of Evidence"
         type="text"
         placeholder="Type your charter number"
-        name="MOE"
-        v-model="MOE"
-        :error="MOEError"
+        name="mountainOfInfluence"
+        v-model="mountainOfInfluence"
+        :error="mountainOfInfluenceError"
         classInput="h-[40px]"
       />
 
-      <CustomVueSelect
+      <Select
+        label="Affinity Group"
+        :options="affinityGroupMenu"
+        v-model.value="affinityGroup"
+        :modelValue="affinityGroup"
+        :error="affinityGroupError"
+        classInput="!h-[40px]"
+      />
+
+      <!-- <CustomVueSelect
         name="affinityGroup"
         v-model="affinityGroup"
         :modelValue="affinityGroup"
@@ -60,8 +71,17 @@
         :options="affinityGroupMenu"
         label="Affinity Group"
         @update:modelValue="defaultSelectedValue = $event"
+      /> -->
+
+      <Select
+        label="Department"
+        :options="departmentMenu"
+        v-model.value="department"
+        :modelValue="department"
+        :error="departmentError"
+        classInput="!h-[40px]"
       />
-      <CustomVueSelect
+      <!-- <CustomVueSelect
         name="department"
         v-model="department"
         :modelValue="department"
@@ -69,16 +89,25 @@
         :options="departmentMenu"
         label="Department"
         @update:modelValue="defaultSelectedValue = $event"
-      />
-      <CustomVueSelect
-        name="CIHAddress"
-        v-model="CIHAddress"
-        :modelValue="CIHAddress"
-        :error="CIHAddressError"
+      /> -->
+
+      <Select
+        label="CIH Address"
         :options="CIHAddressMenu"
+        v-model.value="cihAddress"
+        :modelValue="cihAddress"
+        :error="cihAddressError"
+        classInput="!h-[40px]"
+      />
+      <!-- <CustomVueSelect
+        name="cihAddress"
+        v-model="cihAddress"
+        :modelValue="cihAddress"
+        :error="cihAddressError"
+        :options="cihAddressMenu"
         label="CIH Address"
         @update:modelValue="defaultSelectedValue = $event"
-      />
+      /> -->
     </div>
 
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-6">
@@ -91,11 +120,15 @@
 </template>
 
 <script setup>
+import Select from "@/components/Select";
+import { computed, watch } from "vue";
 import Textinput from "@/components/Textinput";
 import { useField, useForm } from "vee-validate";
 import * as yup from "yup";
-import CustomVueSelect from "@/components/Select/CustomVueSelect.vue";
-import { useRouter } from "vue-router";
+// import CustomVueSelect from "@/components/Select/CustomVueSelect.vue";
+import ProfileInputSkeleton from "@/components/Pages/Profile/ProfileInputSkeleton.vue";
+
+// import { useRouter } from "vue-router";
 import {
   levelOfATSMenu,
   isCharterMemberMenu,
@@ -104,115 +137,126 @@ import {
   departmentMenu,
   CIHAddressMenu,
 } from "@/constant/data";
-// Define a validation schema
+
+import { inject, onMounted } from "vue";
+import { useStore } from "vuex";
+import { useToast } from "vue-toastification";
+
+onMounted(() => {
+  getChurchAffiliationsData();
+});
+const id = inject("id");
+const store = useStore();
+const toast = useToast();
+const getChurchAffiliationsData = () => {
+  store.dispatch("getChurchAffiliationsById", id.value);
+};
+const churchAffiliationsDataLoading = computed(
+  () => store.state.profile.getChurchAffiliationsDataloading
+);
+
+const churchAffiliationsData = computed(
+  () => store.state.profile.churchAffiliationsData
+);
+
+const success = computed(
+  () => store.state.profile.updateChurchAffiliationDataSuccess
+);
+
 const schema = yup.object({
-  levelOfATS: yup
-    .object()
-    .shape({
-      value: yup.string(),
-      label: yup.string(),
-    })
-    .nullable(),
-  isCharterMember: yup
-    .object()
-    .shape({
-      value: yup.bool(),
-      label: yup.string(),
-    })
-    .nullable(),
-  charterMemberNumber: yup.string(),
-  CIHZone: yup
-    .object()
-    .shape({
-      value: yup.string(),
-      label: yup.string(),
-    })
-    .nullable(),
-  MOE: yup.string(),
-  affinityGroup: yup
-    .object()
-    .shape({
-      value: yup.string(),
-      label: yup.string(),
-    })
-    .nullable(),
-  department: yup
-    .object()
-    .shape({
-      value: yup.string(),
-      label: yup.string(),
-    })
-    .nullable(),
-  CIHAddress: yup
-    .object()
-    .shape({
-      value: yup.string(),
-      label: yup.string(),
-    })
-    .nullable(),
+  levelOfATS: yup.string(),
+  charteredMember: yup.bool(),
+  charteredMemberNumber: yup.number().nullable(),
+  cihZone: yup.string(),
+  mountainOfInfluence: yup.string(),
+  affinityGroup: yup.string(),
+  department: yup.string(),
+  cihAddress: yup.string(),
 });
 
-const router = useRouter();
-
-const goToProfile = () => {
-  router.push("/profile");
-};
-
-const formValues = {
-  levelOfATS: {
-    value: "",
-    label: "",
-  },
-  isCharterMember: {
-    value: false,
-    label: "false",
-  },
-  charterMemberNumber: "",
-  CIHZone: {
-    value: "",
-    label: "",
-  },
-  MOE: "",
-  affinityGroup: {
-    value: "",
-    label: "",
-  },
-  department: {
-    value: "",
-    label: "",
-  },
-  CIHAddress: {
-    value: "",
-    label: "",
-  },
-};
-
-const { handleSubmit } = useForm({
+const { handleSubmit, setValues } = useForm({
   validationSchema: schema,
-  initialValues: formValues,
+  initialValues: churchAffiliationsData.value,
 });
 // No need to define rules for fields
 
 const { value: levelOfATS, errorMessage: levelOfATSError } =
   useField("levelOfATS");
-const { value: isCharterMember, errorMessage: isCharterMemberError } =
-  useField("isCharterMember");
-const { value: charterMemberNumber, errorMessage: charterMemberNumberError } =
-  useField("charterMemberNumber");
-const { value: CIHZone, errorMessage: CIHZoneError } = useField("CIHZone");
-const { value: MOE, errorMessage: MOEError } = useField("MOE");
+const { value: charteredMember, errorMessage: charteredMemberError } =
+  useField("charteredMember");
+const {
+  value: charteredMemberNumber,
+  errorMessage: charteredMemberNumberError,
+} = useField("charteredMemberNumber");
+const { value: cihZone, errorMessage: cihZoneError } = useField("cihZone");
+const { value: mountainOfInfluence, errorMessage: mountainOfInfluenceError } =
+  useField("mountainOfInfluence");
 const { value: affinityGroup, errorMessage: affinityGroupError } =
   useField("affinityGroup");
 
 const { value: department, errorMessage: departmentError } =
   useField("department");
 
-const { value: CIHAddress, errorMessage: CIHAddressError } =
-  useField("CIHAddress");
+const { value: cihAddress, errorMessage: cihAddressError } =
+  useField("cihAddress");
 
+const prepareDetails = (values, type) => {
+  const updateObj = {
+    id: churchAffiliationsData.value?.id,
+    userId: id.value,
+    levelOfATS: String(values.levelOfATS),
+    charteredMember:
+      values.charteredMember == true || values.charteredMember == "true"
+        ? true
+        : false,
+    charteredMemberNumber: String(values.charteredMemberNumber),
+    cihZone: values.cihZone,
+    mountainOfInfluence: values.mountainOfInfluence,
+    affinityGroup: values.affinityGroup,
+    department: values.department,
+    cihAddress: values.cihAddress,
+  };
+  const createObj = {
+    userId: id.value,
+    levelOfATS: String(values.levelOfATS),
+    charteredMember:
+      values.charteredMember == true || values.charteredMember == "true"
+        ? true
+        : false,
+    charteredMemberNumber: String(values.charteredMemberNumber),
+    cihZone: values.cihZone,
+    mountainOfInfluence: values.mountainOfInfluence,
+    affinityGroup: values.affinityGroup,
+    department: values.department,
+    cihAddress: values.cihAddress,
+  };
+  const obj = type == "create" ? createObj : updateObj;
+  return obj;
+};
 const onSubmit = handleSubmit((values) => {
-  console.log("PersonalDetails: " + JSON.stringify(values));
-  goToProfile();
+  // console.log("PersonalDetails: " + JSON.stringify(prepareDetails(values)));
+  const hasDataError = churchAffiliationsData.value == null;
+  if (hasDataError) {
+    store.dispatch("createChurchAffiliation", prepareDetails(values, "create"));
+  }
+  if (!hasDataError) {
+    store.dispatch("updateChurchAffiliation", prepareDetails(values, "edit"));
+  }
+});
+
+watch(churchAffiliationsData, () => {
+  // setValues({
+  //   charteredMember:
+  //     churchAffiliationsData.value.charteredMember == true ? "true" : "false",
+  //   ...churchAffiliationsData.value,
+  // });
+  setValues(churchAffiliationsData.value);
+});
+
+watch(success, () => {
+  if (success.value) {
+    toast.success("Successful");
+  }
 });
 </script>
 

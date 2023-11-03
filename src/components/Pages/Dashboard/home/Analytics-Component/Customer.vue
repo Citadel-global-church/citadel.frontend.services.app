@@ -88,7 +88,7 @@
   </div>
 </template>
 <script>
-import ProgressBar from '@/components/ProgressBar';
+import ProgressBar from "@/components/ProgressBar";
 export default {
   components: {
     ProgressBar,
@@ -97,46 +97,46 @@ export default {
     return {
       customers: [
         {
-          title: 'Nicole Kidman',
-          img: 'cus-1.png',
+          title: "Nicole Kidman",
+          img: "cus-1.png",
           value: 70,
-          bg: 'before:bg-info-500',
-          barColor: 'bg-info-500',
+          bg: "before:bg-info-500",
+          barColor: "bg-info-500",
           number: 2,
         },
         {
-          title: 'Monica Bellucci',
-          img: 'cus-2.png',
+          title: "Monica Bellucci",
+          img: "cus-2.png",
           value: 80,
-          bg: 'before:bg-warning-500',
-          barColor: 'bg-warning-500',
+          bg: "before:bg-warning-500",
+          barColor: "bg-warning-500",
           active: true,
           number: 1,
         },
         {
-          title: 'Pamela Anderson',
-          img: 'cus-3.png',
+          title: "Pamela Anderson",
+          img: "cus-3.png",
           value: 65,
-          bg: 'before:bg-success-500',
-          barColor: 'bg-success-500',
+          bg: "before:bg-success-500",
+          barColor: "bg-success-500",
           number: 3,
         },
       ],
       customers2: [
         {
-          title: 'Dianne Russell',
-          img: require('@/assets/images/users/user-1.jpg'),
+          title: "Dianne Russell",
+          img: require("@/assets/images/users/user-1.jpg"),
           value: 60,
-          bg: 'before:bg-info-500',
-          barColor: 'bg-info-500',
+          bg: "before:bg-info-500",
+          barColor: "bg-info-500",
           number: 4,
         },
         {
-          title: 'Robert De Niro',
-          img: require('@/assets/images/users/user-2.jpg'),
+          title: "Robert De Niro",
+          img: require("@/assets/images/users/user-2.jpg"),
           value: 50,
-          bg: 'before:bg-warning-500',
-          barColor: 'bg-warning-500',
+          bg: "before:bg-warning-500",
+          barColor: "bg-warning-500",
 
           number: 5,
         },

@@ -351,13 +351,13 @@ export default {
       ],
       meets: [
         {
-          img: require("@/assets/images/svg/sk.svg"),
+          img: require("@/assets/images/svg/dc.svg"),
           title: "Meeting with client",
           date: "01 Nov 2021",
           meet: "Zoom meeting",
         },
         {
-          img: require("@/assets/images/svg/path.svg"),
+          img: require("@/assets/images/svg/dc.svg"),
           title: "Design meeting (team)",
           date: "01 Nov 2021",
           meet: "Skyp meeting",
@@ -369,7 +369,7 @@ export default {
           meet: "Google meeting",
         },
         {
-          img: require("@/assets/images/svg/sk.svg"),
+          img: require("@/assets/images/svg/dc.svg"),
           title: "Meeting with client",
           date: "01 Nov 2021",
           meet: "Zoom meeting",

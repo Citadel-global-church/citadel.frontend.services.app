@@ -71,7 +71,7 @@
           </span>
         </span>
         <span v-if="props.column.field == 'action'">
-          <div class="flex space-x-3 justify-center">
+          <div class="flex space-x-3 justify-start">
             <Tooltip placement="top" arrow theme="dark">
               <template #button>
                 <div class="action-btn">
@@ -138,7 +138,7 @@ export default {
       searchTerm: "",
 
       options: [
-      {
+        {
           value: "25",
           label: "25",
         },
@@ -156,10 +156,6 @@ export default {
         },
       ],
       columns: [
-        {
-          label: "Id",
-          field: "id",
-        },
         {
           label: "Order",
           field: "order",
@@ -187,10 +183,10 @@ export default {
           label: "Status",
           field: "status",
         },
-        {
-          label: "Action",
-          field: "action",
-        },
+        // {
+        //   label: "Action",
+        //   field: "action",
+        // },
       ],
     };
   },

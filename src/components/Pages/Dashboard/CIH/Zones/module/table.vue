@@ -2,13 +2,7 @@
   <div>
     <Card noborder>
       <div class="md:flex pb-6 items-center justify-between">
-        <div
-          class="flex md:mb-0 mb-3 border border-gray-200 rounded text-sm"
-        ></div>
-        <div
-          class="md:flex md:space-x-3 items-center flex-none"
-          :class="window.width < 768 ? 'space-x-rb' : ''"
-        >
+        <div class="flex gap-x-4 rounded text-sm">
           <InputGroup
             v-model="searchTerm"
             placeholder="Search"
@@ -19,15 +13,19 @@
           />
 
           <!-- <VueTailwindDatePicker
-            v-model="dateValue"
+            v-model="dateValue"mdi:house-group-add
             :formatter="formatter"
             input-classes="form-control h-[36px]"
             placeholder="Select date"
             as-single
           /> -->
-
+        </div>
+        <div
+          class="md:flex md:space-x-3 items-center flex-none"
+          :class="window.width < 768 ? 'space-x-rb' : ''"
+        >
           <Button
-            icon="heroicons-outline:plus-sm"
+            icon="mdi:house-group-add"
             text="Add center"
             btnClass=" btn-primary font-normal btn-sm "
             iconClass="text-lg"
@@ -63,15 +61,6 @@
           :search-options="{
             enabled: true,
             externalQuery: searchTerm,
-          }"
-          :select-options="{
-            enabled: true,
-            selectOnCheckboxOnly: true, // only select when checkbox is clicked instead of the row
-            selectioninfoClass: 'table-input-checkbox',
-            selectionText: 'rows selected',
-            clearSelectionText: 'clear',
-            disableSelectinfo: true, // disable the select info-500 panel on top
-            selectAllByGroup: true, // when used in combination with a grouped table, add a checkbox in the header row to check/uncheck the entire group
           }"
         >
           <template v-slot:table-row="props">
@@ -330,17 +319,12 @@ export default {
       ],
       columns: [
         {
-          label: "Date created",
-          field: "date",
-        },
-        {
-          label: "Name",
+          label: "Center Name",
           field: "name",
         },
-
         {
-          label: "Total members",
-          field: "total",
+          label: "Coordinator",
+          field: "coordinator",
         },
 
         {
@@ -348,6 +332,14 @@ export default {
           field: "location",
         },
 
+        {
+          label: "Total members",
+          field: "total",
+        },
+        {
+          label: "Date created",
+          field: "date",
+        },
         {
           label: "Action",
           field: "action",

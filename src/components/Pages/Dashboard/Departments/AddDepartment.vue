@@ -1,19 +1,19 @@
 <template>
-  <div>
+  <div v-if="state.department.addmodal">
     <Modal
-      :activeModal="store.state.department.addmodal"
+      :activeModal="state.department.addmodal"
       @close="closeModal"
       title="Create Department"
       centered
     >
-      <form @submit.prevent="addDepartment" class="space-y-4">
+      <form @submit.prevent="createDepartment" class="space-y-4">
         <Textinput
-          label="title"
+          label="department Name"
           type="text"
           placeholder="Department Name"
-          name="title"
-          v-model.trim="newTodoText"
-          :error="newtodoError"
+          name="departmentName"
+          v-model.value="departmentName"
+          :error="departmentNameError"
         />
         <div class="assagin space-y-4">
           <!-- <div class="grid lg:grid-cols-2 gap-4 grid-cols-1">
@@ -88,90 +88,88 @@
           <Textarea
             label="Department description"
             placeholder="Department description"
-            v-model="desc"
-            :error="descoError"
+            v-model.value="description"
+            :error="descriptionError"
+          />
+
+          <Select
+            label="HOD"
+            :options="membersOptions"
+            v-model.value="hod"
+            :error="hodError"
           />
         </div>
 
         <div class="text-right">
-          <Button text="Add" btnClass="btn-dark"></Button>
+          <Button
+            text="Add department"
+            type="submit"
+            :disabled="loading"
+            btnClass="btn-dark"
+          ></Button>
         </div>
       </form>
     </Modal>
   </div>
 </template>
 <script setup>
+import Select from "@/components/Select";
 import Button from "@/components/Button";
-// import FormGroup from "@/components/FormGroup";
+import { computed, watch } from "vue";
 import Modal from "@/components/Modal";
-// import VueSelect from "@/components/Select/VueSelect";
+import { useToast } from "vue-toastification";
 import Textarea from "@/components/Textarea";
 import Textinput from "@/components/Textinput";
-import { v4 as uuidv4 } from "uuid";
 import { useField, useForm } from "vee-validate";
 // import vSelect from "vue-select";
 import { useStore } from "vuex";
 import * as yup from "yup";
-// import { assignOption } from "@/constant/data";
-let store = useStore();
 
-// const options = [
-//   {
-//     value: "team",
-//     label: "team",
-//   },
-//   {
-//     value: "low",
-//     label: "low",
-//   },
-//   {
-//     value: "medium",
-//     label: "medium",
-//   },
-//   {
-//     value: "high",
-//     label: "high",
-//   },
-// ];
+let { dispatch, state } = useStore();
+const toast = useToast();
+const membersOptions = computed(() =>
+  state?.member?.data.map((i) => {
+    return {
+      label: i.fullName,
+      value: i.userId,
+    };
+  })
+);
+const success = computed(() => state.department.addsuccess);
+const loading = computed(() => state.department.loading);
 
 const schema = yup.object({
-  newTodoText: yup.string().required("Title is required"),
-  desc: yup.string().required("Description is required"),
-
-  category: yup.mixed().nullable().required("Please select category"),
-  assign: yup.mixed().nullable().required("Please select One"),
-  startDate: yup.string().required("Start date is required"),
-  endDate: yup.string().required("End date is required"),
+  departmentName: yup.string().required("Name is required"),
+  description: yup.string().required("Please provide a short description"),
+  hod: yup.string().required("Please select a HOD"),
 });
+
 const { handleSubmit } = useForm({
   validationSchema: schema,
 });
-const { value: newTodoText, errorMessage: newtodoError } =
-  useField("newTodoText");
-const { value: desc, errorMessage: descoError } = useField("desc");
-
-// const { value: category, errorMessage: errorCategory } = useField("category");
-
-// const { value: assign, errorMessage: errorassign } = useField("assign");
-// const { value: startDate, errorMessage: errorstartDate } =
-//   useField("startDate");
-// const { value: endDate, errorMessage: errorendDate } = useField("endDate");
-
-const addDepartment = handleSubmit(() => {
-  store.dispatch("addDepartment", {
-    id: uuidv4(),
-    name: newTodoText.value,
-    des: desc.value,
-    // assignto: assign.value,
-    // category: category.value.map((item) => item.value),
-    // startDate: startDate.value,
-    // endDate: endDate.value,
-    progress: 40,
+const { value: departmentName, errorMessage: departmentNameError } =
+  useField("departmentName");
+const { value: description, errorMessage: descriptionError } =
+  useField("description");
+const { value: hod, errorMessage: hodError } = useField("hod");
+const createDepartment = handleSubmit((values) => {
+  dispatch("addDepartment", {
+    userId: hod,
+    departmentCode:
+      values.departmentName.slice(0, 2).toUpperCase() +
+      Math.floor(Math.random() * 100 + 100),
+    ...values,
   });
 });
 
 const closeModal = () => {
-  store.dispatch("closeModal");
+  dispatch("closeModal");
 };
+watch(success, () => {
+  if (success.value) {
+    closeModal();
+    toast.success("Department created");
+  }
+});
 </script>
 <style lang=""></style>

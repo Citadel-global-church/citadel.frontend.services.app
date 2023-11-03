@@ -280,14 +280,14 @@
   </div>
 </template>
 <script>
-import Card from '@/components/Card';
+import Card from "@/components/Card";
 import {
   gearradil,
   gearradilDark,
   MultipleRadialbars,
   MultipleRadialbarsDark,
-} from '../../constant/appex-chart';
-import CompanyTable from './Analytics-Component/CompanyTable';
+} from "../../constant/appex-chart";
+import CompanyTable from "./Analytics-Component/CompanyTable";
 import {
   columnCharthome,
   columnCharthomeDark,
@@ -295,12 +295,12 @@ import {
   shapeLine2,
   shapeLine3,
   mostSales,
-} from './Analytics-Component/data';
-import DropEvent from './Analytics-Component/DropEvent';
-import Map from './Analytics-Component/Map';
-import SelectMonth from './Analytics-Component/SelectMonth';
-import Breadcrumb from './Analytics-Component/Breadcrumbs';
-import window from '@/mixins/window';
+} from "./Analytics-Component/data";
+import DropEvent from "./Analytics-Component/DropEvent";
+import Map from "./Analytics-Component/Map";
+import SelectMonth from "./Analytics-Component/SelectMonth";
+import Breadcrumb from "./Analytics-Component/Breadcrumbs";
+import window from "@/mixins/window";
 
 export default {
   mixins: [window],
@@ -321,63 +321,63 @@ export default {
       gearradil,
       gearradilDark,
       mostSales,
-      fillterMap: 'usa',
+      fillterMap: "usa",
       statistics: [
         {
           name: shapeLine1,
-          title: 'Totel revenue',
-          count: '3,564',
-          bg: 'bg-[#E5F9FF] dark:bg-slate-900	',
+          title: "Totel revenue",
+          count: "3,564",
+          bg: "bg-[#E5F9FF] dark:bg-slate-900	",
         },
         {
           name: shapeLine2,
-          title: 'Products sold',
-          count: '564',
-          bg: 'bg-[#FFEDE5] dark:bg-slate-900	',
+          title: "Products sold",
+          count: "564",
+          bg: "bg-[#FFEDE5] dark:bg-slate-900	",
         },
         {
           name: shapeLine3,
-          title: 'Growth',
-          count: '+5.0%',
-          bg: 'bg-[#EAE5FF] dark:bg-slate-900	',
+          title: "Growth",
+          count: "+5.0%",
+          bg: "bg-[#EAE5FF] dark:bg-slate-900	",
         },
       ],
       activity: [
         {
           id: 1,
-          img: require('@/assets/images/users/user-1.jpg'),
+          img: require("@/assets/images/users/user-1.jpg"),
         },
         {
           id: 2,
-          img: require('@/assets/images/users/user-2.jpg'),
+          img: require("@/assets/images/users/user-2.jpg"),
         },
         {
           id: 3,
-          img: require('@/assets/images/users/user-3.jpg'),
+          img: require("@/assets/images/users/user-3.jpg"),
         },
         {
           id: 4,
-          img: require('@/assets/images/users/user-4.jpg'),
+          img: require("@/assets/images/users/user-4.jpg"),
         },
         {
           id: 5,
-          img: require('@/assets/images/users/user-5.jpg'),
+          img: require("@/assets/images/users/user-5.jpg"),
         },
         {
           id: 6,
-          img: require('@/assets/images/users/user-6.jpg'),
+          img: require("@/assets/images/users/user-6.jpg"),
         },
         {
           id: 7,
-          img: require('@/assets/images/users/user-1.jpg'),
+          img: require("@/assets/images/users/user-1.jpg"),
         },
         {
           id: 6,
-          img: require('@/assets/images/users/user-2.jpg'),
+          img: require("@/assets/images/users/user-2.jpg"),
         },
         {
           id: 7,
-          img: require('@/assets/images/users/user-2.jpg'),
+          img: require("@/assets/images/users/user-2.jpg"),
         },
       ],
     };

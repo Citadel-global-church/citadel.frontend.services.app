@@ -21,6 +21,7 @@ function getRedirectFrom(url) {
 }
 export default {
   state: {
+    logincheckdata: null,
     error: null,
     signupsuccess: false,
     loginsuccess: false,
@@ -29,7 +30,10 @@ export default {
     forgotsuccess: false,
     validendsuccess: false,
     validinitsuccess: false,
+    requestsuccess: false,
+    checksuccess: false,
     loading: null,
+    otp: "",
     accessToken: localStorage.getItem("accessToken") || null,
     avatar: localStorage.getItem("avatar") || null,
     userData: JSON.parse(localStorage.getItem("userData")) || null,
@@ -56,6 +60,21 @@ export default {
       state.error = err;
       state.accessToken = null;
       state.loginsuccess = false;
+    },
+    loginCheckBegin(state) {
+      state.loading = true;
+      state.error = null;
+      state.loginchecksuccess = false;
+    },
+    loginCheckSuccess(state, data) {
+      state.loading = false;
+      state.loginchecksuccess = true;
+      state.logincheckdata = data;
+    },
+    loginCheckErr(state, err) {
+      state.loading = false;
+      state.error = err;
+      state.loginchecksuccess = false;
     },
     logoutBegin(state) {
       state.loading = true;
@@ -149,8 +168,35 @@ export default {
       state.error = err;
       state.resetsuccess = false;
     },
+    requestBegin(state) {
+      state.loading = true;
+      state.error = null;
+      state.requestsuccess = false;
+    },
+    requestSuccess(state, data) {
+      state.loading = false;
+      state.requestsuccess = true;
+      state.otp = data;
+    },
+    requestErr(state, err) {
+      state.loading = false;
+      state.error = err;
+      state.requestsuccess = false;
+    },
   },
   actions: {
+    async loginCheck({ commit }, data) {
+      try {
+        commit("loginCheckBegin");
+        const response = await DataService.post(urls.LOGIN_CHECK, data);
+
+        if (response.status === 200) {
+          commit("loginCheckSuccess", response.data);
+        }
+      } catch (err) {
+        commit("loginCheckErr", err);
+      }
+    },
     async login({ commit }, data) {
       try {
         commit("loginBegin");
@@ -185,11 +231,13 @@ export default {
     async signup({ commit }, data) {
       try {
         commit("signupBegin");
+
         const response = await DataService.post(urls.SIGN_UP_USER, data);
 
         if (response.status === 200) {
           commit("signupSuccess");
         }
+        commit("signupSuccess");
       } catch (err) {
         commit("signupErr", err);
       }
@@ -204,6 +252,8 @@ export default {
         if (response.status === 200) {
           commit("validateInitiateSuccess", response.data.message);
         }
+
+        commit("validateInitiateSuccess", "Successful");
       } catch (err) {
         commit("validateInitiateErr", err);
       }
@@ -219,6 +269,8 @@ export default {
         if (response.status === 200) {
           commit("validateEndSuccess");
         }
+
+        commit("validateEndSuccess");
       } catch (err) {
         commit("validateEndErr", err);
       }
@@ -251,6 +303,19 @@ export default {
         }
       } catch (err) {
         commit("resetErr", err);
+      }
+    },
+
+    async requestOtp({ commit }, data) {
+      try {
+        commit("requestBegin");
+        const response = await DataService.post(urls.REQUEST_OTP, data);
+
+        if (response.status === 200) {
+          commit("requestSuccess", response.data.data);
+        }
+      } catch (err) {
+        commit("requestErr", err);
       }
     },
   },

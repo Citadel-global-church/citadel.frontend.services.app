@@ -1,6 +1,10 @@
 <template>
   <form @submit.prevent="onSubmit" class="space-y-4">
-    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+    <!-- {{ values }} -->
+    <!-- {{ employerData == null }} -->
+
+    <ProfileInputSkeleton v-if="employerDataLoading" />
+    <div v-else class="grid grid-cols-1 sm:grid-cols-2 gap-4">
       <Textinput
         label="Employer Name"
         type="text"
@@ -15,9 +19,9 @@
         label="Employer Address 1"
         type="text"
         placeholder="Type your address 1"
-        name="employerAddress1"
-        v-model="employerAddress1"
-        :error="employerAddress1Error"
+        name="employerAddress"
+        v-model="employerAddress"
+        :error="employerAddressError"
         classInput="h-[40px]"
       />
       <Textinput
@@ -39,43 +43,39 @@
         classInput="h-[40px]"
       />
 
-      <CustomVueSelect
-        name="LGA"
-        v-model="LGA"
-        :modelValue="LGA"
-        :error="LGAError"
-        :options="LGAMenu"
+      <Select
         label="LGA"
-        @update:modelValue="defaultSelectedValue = $event"
+        :options="LGAMenu"
+        v-model.value="lga"
+        :modelValue="lga"
+        :error="lgaError"
+        classInput="!h-[40px]"
       />
-      <CustomVueSelect
-        name="state"
-        v-model="state"
+
+      <Select
+        label="State"
+        :options="stateMenu"
+        v-model.value="state"
         :modelValue="state"
         :error="stateError"
-        :options="stateMenu"
-        label="State"
-        @update:modelValue="defaultSelectedValue = $event"
+        classInput="!h-[40px]"
       />
 
-      <CustomVueSelect
-        name="country"
-        v-model="country"
+      <Select
+        label="Country"
+        :options="countryMenu"
+        v-model.value="country"
         :modelValue="country"
         :error="countryError"
-        :options="countryMenu"
-        label="Country"
-        @update:modelValue="defaultSelectedValue = $event"
+        classInput="!h-[40px]"
       />
-
-      <CustomVueSelect
-        name="industry"
-        v-model="industry"
-        :modelValue="industry"
-        :error="industryError"
-        :options="industryMenu"
+      <Select
         label="Industry"
-        @update:modelValue="defaultSelectedValue = $event"
+        :options="industryMenu"
+        v-model.value="sector"
+        :modelValue="sector"
+        :error="sectorError"
+        classInput="!h-[40px]"
       />
 
       <Textinput
@@ -99,109 +99,115 @@
 </template>
 
 <script setup>
+import Select from "@/components/Select";
 import Textinput from "@/components/Textinput";
 import { useField, useForm } from "vee-validate";
 import * as yup from "yup";
-import CustomVueSelect from "@/components/Select/CustomVueSelect.vue";
-import { useRouter } from "vue-router";
 import { LGAMenu, stateMenu, countryMenu, industryMenu } from "@/constant/data";
+import { useToast } from "vue-toastification";
+import { inject, onMounted, computed, watch } from "vue";
+import { useStore } from "vuex";
+import ProfileInputSkeleton from "@/components/Pages/Profile/ProfileInputSkeleton.vue";
+
+onMounted(() => {
+  getEmployerData();
+});
+const id = inject("id");
+const store = useStore();
+const getEmployerData = () => {
+  store.dispatch("getEmployerDetailById", id.value);
+};
+const employerDataLoading = computed(
+  () => store.state.profile.getEmployerDataloading
+);
+
+const employerData = computed(() => store.state.profile.employerData);
+const success = computed(() => store.state.profile.updateEmployerDataSuccess);
+
+const toast = useToast();
 // Define a validation schema
 const schema = yup.object({
   employerName: yup.string(),
-  employerAddress1: yup.string(),
+  employerAddress: yup.string(),
   employerAddress2: yup.string(),
   positionHeld: yup.string(),
-  LGA: yup
-    .object()
-    .shape({
-      value: yup.string(),
-      label: yup.string(),
-    })
-    .nullable(),
-  state: yup
-    .object()
-    .shape({
-      value: yup.string(),
-      label: yup.string(),
-    })
-    .nullable(),
-  country: yup
-    .object()
-    .shape({
-      value: yup.string(),
-      label: yup.string(),
-    })
-    .nullable(),
-  industry: yup
-    .object()
-    .shape({
-      value: yup.string(),
-      label: yup.string(),
-    })
-    .nullable(),
+  lga: yup.string(),
+  state: yup.string(),
+  country: yup.string(),
+  sector: yup.string(),
 
   subSector: yup.string(),
 });
 
-const router = useRouter();
-
-const goToProfile = () => {
-  router.push("/profile");
-};
-
-const formValues = {
-  employerName: "",
-  employerAddress1: "",
-  employerAddress2: "",
-  positionHeld: "",
-  LGA: {
-    value: "",
-    label: "",
-  },
-  state: {
-    value: "",
-    label: "",
-  },
-  country: {
-    value: "",
-    label: "",
-  },
-  industry: {
-    value: "",
-    label: "",
-  },
-
-  subSector: "",
-};
-
-const { handleSubmit } = useForm({
+const { handleSubmit, setValues } = useForm({
   validationSchema: schema,
-  initialValues: formValues,
+  initialValues: employerData.value,
 });
 // No need to define rules for fields
 
 const { value: employerName, errorMessage: employerNameError } =
   useField("employerName");
 
-const { value: employerAddress1, errorMessage: employerAddress1Error } =
-  useField("employerAddress1");
+const { value: employerAddress, errorMessage: employerAddressError } =
+  useField("employerAddress");
 const { value: employerAddress2, errorMessage: employerAddress2Error } =
   useField("employerAddress2");
 const { value: positionHeld, errorMessage: positionHeldError } =
   useField("positionHeld");
-const { value: LGA, errorMessage: LGAError } = useField("LGA");
+const { value: lga, errorMessage: lgaError } = useField("lga");
 const { value: state, errorMessage: stateError } = useField("state");
 const { value: country, errorMessage: countryError } = useField("country");
-const { value: industry, errorMessage: industryError } = useField("industry");
+const { value: sector, errorMessage: sectorError } = useField("sector");
 
 const { value: subSector, errorMessage: subSectorError } =
   useField("subSector");
 
 // const { value: email, errorMessage: emailError } = useField("email");
-
+const prepareDetails = (values, type) => {
+  const updateObj = {
+    userId: id.value,
+    employerName: values.employerName,
+    employerAddress: values.employerAddress,
+    lga: values.lga,
+    state: values.state,
+    positionHeld: values.positionHeld,
+    sector: values.sector,
+    subSector: values.subSector,
+    country: values.country,
+    id: employerData.value?.id,
+  };
+  const createObj = {
+    userId: id.value,
+    employerName: values.employerName,
+    employerAddress: values.employerAddress,
+    lga: values.lga,
+    state: values.state,
+    positionHeld: values.positionHeld,
+    sector: values.sector,
+    subSector: values.subSector,
+    country: values.country,
+  };
+  const obj = type == "create" ? createObj : updateObj;
+  return obj;
+};
 const onSubmit = handleSubmit((values) => {
-  console.log("PersonalDetails: " + JSON.stringify(values));
-  goToProfile();
+  const hasDataError = employerData.value == null;
+  if (hasDataError) {
+    store.dispatch("createEmployer", prepareDetails(values, "create"));
+  }
+  if (!hasDataError) {
+    store.dispatch("updateEmployer", prepareDetails(values, "edit"));
+  }
+});
+
+watch(employerData, () => {
+  setValues(employerData.value);
+});
+
+watch(success, () => {
+  if (success.value) {
+    toast.success("Successful");
+  }
 });
 </script>
 

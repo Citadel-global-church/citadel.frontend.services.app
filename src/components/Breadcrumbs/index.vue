@@ -12,7 +12,7 @@
       {{ this.$route.name.replace("-", " ") }}
     </h4>
     <ul class="breadcrumbs" v-if="this.$route.meta.groupParent">
-      <li class="text-primary-500">
+      <li class="text-slate-800">
         <router-link :to="{ name: 'home' }" class="text-lg">
           <Icon icon="heroicons-outline:home" />
         </router-link>
@@ -20,7 +20,7 @@
           <Icon icon="heroicons:chevron-right" />
         </span>
       </li>
-      <li class="text-primary-500">
+      <li class="text-slate-800">
         <router-link :to="this.$route.meta.groupParent.url" class="text-base">
           <button type="button" class="capitalize">
             {{ this.$route.meta.groupParent.name }}
@@ -31,7 +31,11 @@
         </span>
       </li>
       <li class="capitalize text-slate-500 dark:text-slate-400">
-        {{ this.$route.name.replace("-", " ") }}
+        {{
+          this.$route.params.name
+            ? this.$route.params.name.replace("-", " ")
+            : this.$route.name.replace("-", " ")
+        }}
       </li>
     </ul>
   </div>

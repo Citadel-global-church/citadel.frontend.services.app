@@ -1,14 +1,10 @@
 <template>
   <div>
     <Card noborder>
-      <div class="md:flex pb-6 items-center">
-        <h6 class="flex-1 md:mb-0 mb-3"></h6>
-        <div
-          class="md:flex md:space-x-3 items-center flex-none"
-          :class="window.width < 768 ? 'space-x-rb' : ''"
-        >
+      <div class="md:flex pb-6 justify-between items-center">
+        <div class="md:flex md:space-x-3 items-center flex-none">
           <InputGroup
-            v-model="searchTerm"
+            v-model="query.searchParameter"
             placeholder="Search"
             type="text"
             prependIcon="heroicons-outline:search"
@@ -23,16 +19,17 @@
             placeholder="Select date"
             as-single
           />
-
+        </div>
+        <div class="md:flex md:space-x-3 items-center flex-none">
           <Button
-            icon="heroicons-outline:plus-sm"
-            text="Add Record"
+            icon="ri:user-add-line"
+            text="Add Member"
             btnClass="btn-primary font-normal btn-sm"
             iconClass="text-lg"
             @click="
               () => {
                 type = 'add';
-                $refs.modalChange.openModal();
+                modalChange.openModal();
               }
             "
           />
@@ -41,27 +38,15 @@
       <div class="-mx-6">
         <vue-good-table
           :columns="columns"
-          styleClass="vgt-table centered"
-          :rows="advancedTable"
+          styleClass="vgt-table"
+          :isLoading="loading"
+          :rows="members || []"
           :sort-options="{
             enabled: false,
           }"
           :pagination-options="{
             enabled: true,
-            perPage: perpage,
-          }"
-          :search-options="{
-            enabled: true,
-            externalQuery: searchTerm,
-          }"
-          :select-options="{
-            enabled: true,
-            selectOnCheckboxOnly: true, // only select when checkbox is clicked instead of the row
-            selectioninfoClass: 'table-input-checkbox',
-            selectionText: 'rows selected',
-            clearSelectionText: 'clear',
-            disableSelectinfo: true, // disable the select info-500 panel on top
-            selectAllByGroup: true, // when used in combination with a grouped table, add a checkbox in the header row to check/uncheck the entire group
+            perPage: query.pageSize,
           }"
         >
           <template v-slot:table-row="props">
@@ -116,7 +101,7 @@
                 <template v-slot:menus>
                   <MenuItem v-for="(item, i) in actions" :key="i">
                     <div
-                      @click="item.doit(item.name)"
+                      @click="item.doit(item.name, props.row)"
                       :class="{
                         'bg-danger-500 text-danger-500 bg-opacity-30 hover:bg-opacity-100 hover:text-white':
                           item.name === 'delete',
@@ -138,12 +123,12 @@
           <template #pagination-bottom="props">
             <div class="py-4 px-3">
               <Pagination
-                :total="50"
-                :current="current"
-                :per-page="perpage"
+                :total="total"
+                :current="query.pageNumber"
+                :per-page="query.pageSize"
                 :pageRange="pageRange"
-                @page-changed="current = $event"
-                :pageChanged="props.pageChanged"
+                @page-changed="query.pageNumber = $event"
+                :pageChanged="perPage"
                 :perPageChanged="props.perPageChanged"
                 enableSearch
                 enableSelect
@@ -158,14 +143,15 @@
     </Card>
   </div>
   <Modal
-    title="Confirm this action"
+    title="Delete First Timer"
     label="Small modal"
-    labelClass="btn-outline-dark"
+    labelClass="btn-outline-danger"
     ref="modal"
     sizeClass="max-w-md"
+    themeClass="bg-danger-500"
   >
     <div class="text-base text-slate-600 dark:text-slate-300 mb-6">
-      Are you sure about this action?
+      Are you sure you want to delete this first timer?
     </div>
 
     <template v-slot:footer>
@@ -173,12 +159,12 @@
         <Button
           text="Cancel"
           btnClass="btn-outline-secondary btn-sm"
-          @click="$refs.modal.closeModal()"
+          @click="modal.closeModal()"
         />
         <Button
-          text="Proceed"
-          btnClass="btn-dark btn-sm"
-          @click="$refs.modal.closeModal()"
+          text="Delete"
+          btnClass="btn-danger btn-sm"
+          @click="handleDelete"
         />
       </div>
     </template>
@@ -201,7 +187,8 @@
   </Modal>
 </template>
 
-<script>
+<script setup>
+import { useToast } from "vue-toastification";
 import VueTailwindDatePicker from "vue-tailwind-datepicker";
 import Dropdown from "@/components/Dropdown";
 import Button from "@/components/Button";
@@ -211,124 +198,185 @@ import Modal from "@/components/Modal/Modal";
 import InputGroup from "@/components/InputGroup";
 import Pagination from "@/components/Pagination";
 import { MenuItem } from "@headlessui/vue";
-import { advancedTable } from "@/constant/basic-tablle-data";
-import window from "@/mixins/window";
 import AddRecord from "../member-add.vue";
 import EditRecord from "../member-edit.vue";
 import ViewRecord from "../member-preview.vue";
+import moment from "moment";
+import { useStore } from "vuex";
+import { debounce } from "lodash";
+import { useRoute } from "vue-router";
+import { computed, onMounted, watch, reactive, ref } from "vue";
 
-export default {
-  mixins: [window],
-  components: {
-    VueTailwindDatePicker,
-    AddRecord,
-    EditRecord,
-    ViewRecord,
-    Pagination,
-    InputGroup,
-    Dropdown,
-    Icon,
-    Card,
-    MenuItem,
-    Button,
-    Modal,
+const router = useRoute();
+const pageRange = ref(5);
+
+const timerid = ref(null);
+const type = ref("");
+
+const dateValue = ref(null);
+
+const formatter = ref({
+  date: "DD MMM YYYY",
+  month: "MMM",
+});
+const actions = ref([
+  {
+    name: "view",
+    icon: "heroicons-outline:eye",
+    doit: (name, { userId }) => {
+      type.value = name;
+      router.push("/profile/" + userId);
+    },
+  },
+  {
+    name: "edit",
+    icon: "heroicons:pencil-square",
+    doit: (name, { userId }) => {
+      type.value = name;
+      router.push("/profile/" + userId);
+    },
+  },
+  {
+    name: "delete",
+    icon: "heroicons-outline:trash",
+    doit: (name, { id }) => {
+      console.log("🚀 ~ file: table.vue:273 ~ data ~ id:", id);
+      type.value = name;
+      timerid.value = id;
+      modal.value.openModal();
+    },
+  },
+]);
+
+const options = ref([
+  {
+    value: "25",
+    label: "25",
+  },
+  {
+    value: "50",
+    label: "50",
+  },
+  {
+    value: "75",
+    label: "75",
+  },
+  {
+    value: "100",
+    label: "100",
+  },
+]);
+
+const columns = ref([
+  {
+    label: "Name",
+    field: "fullName",
+  },
+  {
+    label: "Email",
+    field: "email",
   },
 
-  data() {
-    return {
-      advancedTable,
-      current: 1,
-      perpage: 10,
-      pageRange: 5,
-      searchTerm: "",
-      isOpen: false,
-      id: null,
-      type: "",
-      dateValue: null,
-      formatter: {
-        date: "DD MMM YYYY",
-        month: "MMM",
-      },
-      actions: [
-        {
-          name: "view",
-          icon: "heroicons-outline:eye",
-          doit: (name) => {
-            this.type = name;
-            this.$refs.modalChange.openModal();
-          },
-        },
-        {
-          name: "edit",
-          icon: "heroicons:pencil-square",
-          doit: (name) => {
-            this.type = name;
-            this.$refs.modalChange.openModal();
-          },
-        },
-        {
-          name: "delete",
-          icon: "heroicons-outline:trash",
-          doit: (name) => {
-            this.type = name;
-            this.$refs.modal.openModal();
-          },
-        },
-      ],
-      options: [
-        {
-          value: "25",
-          label: "25",
-        },
-        {
-          value: "50",
-          label: "50",
-        },
-        {
-          value: "75",
-          label: "75",
-        },
-        {
-          value: "100",
-          label: "100",
-        },
-      ],
-      columns: [
-        {
-          label: "Name",
-          field: "name",
-        },
-        {
-          label: "Email",
-          field: "email",
-        },
-
-        {
-          label: "Phone",
-          field: "phone",
-        },
-        {
-          label: "Gender",
-          field: "gender",
-        },
-
-        {
-          label: "DOB",
-          field: "dob",
-        },
-
-        {
-          label: "Department",
-          field: "department",
-        },
-
-        {
-          label: "Action",
-          field: "action",
-        },
-      ],
-    };
+  {
+    label: "Phone",
+    field: "mobile1",
   },
-};
+  {
+    label: "Gender",
+    field: "gender",
+  },
+
+  {
+    label: "DOB",
+    field: "dateOfBirth",
+  },
+
+  {
+    label: "Action",
+    field: "action",
+  },
+]);
+const toast = useToast();
+const modal = ref(null);
+const modalChange = ref(null);
+const query = reactive({
+  pageNumber: 1,
+  pageSize: 10,
+  searchParameter: "",
+  sortOrder: "",
+  isFirstTimer: true,
+});
+const { state, dispatch } = useStore();
+const profileCreated = computed(() => state.profile.profileCreated);
+onMounted(() => {
+  dispatch("getAllBiodata", query);
+  dispatch("getRoles");
+});
+// function fetchRecords(page) {
+//   dispatch("getAllBiodata", { ...query, pageNumber: page });
+// }
+
+const loading = computed(() => state.profile.loading);
+const members = computed(() => {
+  if (state?.profile?.allbiodata) {
+    return state?.profile?.allbiodata.map((item) => {
+      item.fullName = `${item.firstName} ${item.surName}`;
+      item.dateOfBirth = item?.dateOfBirth
+        ? moment(item?.dateOfBirth).format("ll")
+        : "-";
+
+      item.phone = item.phone ? item.phone : "-";
+
+      return item;
+    });
+  }
+  return [];
+});
+const total = computed(() => state.profile.total);
+const addsuccess = computed(() => state.profile.addsuccess);
+// const deleteloading = computed(() => state.profile.deleteloading);
+const deletesuccess = computed(() => state.profile.deletesuccess);
+
+function handleDelete() {
+  dispatch("deleteBiodata", timerid.value);
+}
+function perPage({ currentPage }) {
+  query.pageNumber = currentPage;
+}
+// Define a debounce delay (e.g., 500 milliseconds)
+const debounceDelay = 800;
+const debouncedSearch = debounce((searchValue) => {
+  dispatch("getAllBiodata", { ...query, name: searchValue });
+}, debounceDelay);
+watch(addsuccess, () => {
+  addsuccess.value && dispatch("getAllBiodata", query);
+  modalChange.value.closeModal();
+});
+watch(profileCreated, () => {
+  if (profileCreated.value) {
+    dispatch("getAllBiodata", query);
+    modalChange.value.closeModal();
+  }
+});
+watch(deletesuccess, () => {
+  if (deletesuccess.value) {
+    toast.success("Firstimer deleted ");
+    dispatch("getAllBiodata", query);
+    modal.value.closeModal();
+  }
+});
+
+watch(
+  () => query.searchParameter,
+  () => {
+    debouncedSearch(query.searchParameter);
+  }
+);
+watch(
+  () => query.pageNumber,
+  () => {
+    dispatch("getAllBiodata", query);
+  }
+);
 </script>
 <style lang="scss"></style>

@@ -1,12 +1,23 @@
 <template>
   <form @submit.prevent="onSubmit" class="space-y-4">
-    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+    <!-- {{ biodata }}s -->
+
+    <!-- {{ getBiodataError !== null }} -->
+    <!-- <span>{{ createProfileLoading }}</span>
+    <span>{{  }}</span> -->
+    <!-- <span>UserData: {{ profileData }}</span> -->
+    <!-- <span>FormVal: {{ formValues }}</span> -->
+    <!-- {{ values }} -->
+    <ProfileInputSkeleton v-if="biodataLoading" />
+    <div v-else class="grid grid-cols-1 sm:grid-cols-2 gap-4">
       <Textinput
+        id="firstName"
         label="First Name"
         type="text"
         placeholder="Type your first name"
         name="firstName"
         v-model="firstName"
+        :modelValue="firstName"
         :error="firstNameError"
         classInput="h-[40px]"
       />
@@ -14,9 +25,9 @@
         label="Last Name"
         type="text"
         placeholder="Type your last name"
-        name="lastName"
-        v-model="lastName"
-        :error="lastNameError"
+        name="surName"
+        v-model="surName"
+        :error="surNameError"
         classInput="h-[40px]"
       />
       <Textinput
@@ -28,7 +39,6 @@
         :error="middleNameError"
         classInput="h-[40px]"
       />
-
       <Textinput
         label="Email"
         type="email"
@@ -47,7 +57,6 @@
         :error="mobile1Error"
         classInput="h-[40px]"
       />
-
       <Textinput
         label="Mobile 2"
         type="text"
@@ -61,9 +70,9 @@
         label="Address 1"
         type="text"
         placeholder="Type your address 1"
-        name="address1"
-        v-model="address1"
-        :error="address1Error"
+        name="address"
+        v-model="address"
+        :error="addressError"
         classInput="h-[40px]"
       />
       <Textinput
@@ -75,94 +84,93 @@
         :error="address2Error"
         classInput="h-[40px]"
       />
-
-      <CustomVueSelect
-        name="title"
-        v-model="title"
+      <Select
+        label="Title"
+        :options="titleMenu"
+        v-model.value="title"
         :modelValue="title"
         :error="titleError"
-        :options="titleMenu"
-        label="Title"
-        @update:modelValue="defaultSelectedValue = $event"
+        classInput="!h-[40px]"
       />
 
-      <CustomVueSelect
-        name="LGA"
-        v-model="LGA"
-        :modelValue="LGA"
-        :error="LGAError"
-        :options="LGAMenu"
+      <Select
         label="LGA"
-        @update:modelValue="defaultSelectedValue = $event"
+        :options="LGAMenu"
+        v-model.value="lga"
+        :modelValue="lga"
+        :error="lgaError"
+        classInput="!h-[40px]"
       />
-      <CustomVueSelect
-        name="state"
-        v-model="state"
+
+      <Select
+        label="State"
+        :options="stateMenu"
+        v-model.value="state"
         :modelValue="state"
         :error="stateError"
-        :options="stateMenu"
-        label="State"
-        @update:modelValue="defaultSelectedValue = $event"
+        classInput="!h-[40px]"
       />
 
-      <CustomVueSelect
-        name="country"
-        v-model="country"
+      <Select
+        label="Country"
+        :options="countryMenu"
+        v-model.value="country"
         :modelValue="country"
         :error="countryError"
-        :options="countryMenu"
-        label="Country"
-        @update:modelValue="defaultSelectedValue = $event"
+        classInput="!h-[40px]"
       />
 
-      <CustomVueSelect
-        name="gender"
-        v-model="gender"
+      <Select
+        label="Gender"
+        :options="genderMenu"
+        v-model.value="gender"
         :modelValue="gender"
         :error="genderError"
-        :options="genderMenu"
-        label="Gender"
-        @update:modelValue="defaultSelectedValue = $event"
+        classInput="!h-[40px]"
       />
 
-      <CustomVueSelect
-        name="employmentStatus"
-        v-model="employmentStatus"
+      <Select
+        label="Employment Status"
+        :options="employmentStatusMenu"
+        v-model.value="employmentStatus"
         :modelValue="employmentStatus"
         :error="employmentStatusError"
-        :options="employmentStatusMenu"
-        label="Employment Status"
-        @update:modelValue="defaultSelectedValue = $event"
+        classInput="!h-[40px]"
       />
-
-      <CustomVueSelect
-        name="nationality"
-        v-model="nationality"
+      <Select
+        label="Nationality"
+        :options="nationalityMenu"
+        v-model.value="nationality"
         :modelValue="nationality"
         :error="nationalityError"
-        :options="nationalityMenu"
-        label="Nationality"
-        @update:modelValue="defaultSelectedValue = $event"
+        classInput="!h-[40px]"
       />
 
-      <CustomVueSelect
-        name="stateOfOrigin"
-        v-model="stateOfOrigin"
+      <Select
+        label="Gender"
+        :options="genderMenu"
+        v-model.value="gender"
+        :modelValue="gender"
+        :error="genderError"
+        classInput="!h-[40px]"
+      />
+
+      <Select
+        label="State Of Origin"
+        :options="stateOfOriginMenu"
+        v-model.value="stateOfOrigin"
         :modelValue="stateOfOrigin"
         :error="stateOfOriginError"
-        :options="stateOfOriginMenu"
-        label="State of Origin"
-        @update:modelValue="defaultSelectedValue = $event"
+        classInput="!h-[40px]"
       />
 
-      <CustomVueSelect
-        name="maritalStatus"
-        v-model="maritalStatus"
+      <Select
+        label="Marital Status"
+        :options="maritalStatusMenu"
+        v-model.value="maritalStatus"
         :modelValue="maritalStatus"
         :error="maritalStatusError"
-        :options="maritalStatusMenu"
-        label="Marital Status"
-        @update:modelValue="defaultSelectedValue = $event"
+        classInput="!h-[40px]"
       />
 
       <Textinput
@@ -174,7 +182,6 @@
         :error="nearestBusStopError"
         classInput="h-[40px]"
       />
-
       <Textinput
         label="Place Of Birth"
         type="text"
@@ -184,23 +191,36 @@
         :error="placeOfBirthError"
         classInput="h-[40px]"
       />
+      <FormGroup label="DOB" name="d1">
+        <flat-pickr
+          v-model="dateOfBirth"
+          class="form-control"
+          id="d1"
+          placeholder="yyyy, dd M"
+          :error="dateOfBirthError"
+        />
+      </FormGroup>
     </div>
-
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-6">
-      <button type="submit" class="btn btn-primary block w-full text-center">
+      <button
+        :disabled="createProfileLoading"
+        type="submit"
+        class="btn btn-primary block w-full text-center"
+      >
         Save Changes
       </button>
       <div class="hidden sm:block"></div>
     </div>
   </form>
 </template>
-
 <script setup>
+import Select from "@/components/Select";
+import FormGroup from "@/components/FormGroup";
 import Textinput from "@/components/Textinput";
 import { useField, useForm } from "vee-validate";
 import * as yup from "yup";
-import CustomVueSelect from "@/components/Select/CustomVueSelect.vue";
-import { useRouter } from "vue-router";
+// import CustomVueSelect from "@/components/Select/CustomVueSelect.vue";
+// import { useRouter } from "vue-router";
 import {
   titleMenu,
   LGAMenu,
@@ -212,159 +232,78 @@ import {
   stateOfOriginMenu,
   maritalStatusMenu,
 } from "@/constant/data";
+import { useStore } from "vuex";
+import { computed, onMounted, watch } from "vue";
+import { useToast } from "vue-toastification";
+// import { inject } from "vue";
+import { useRoute } from "vue-router";
+import ProfileInputSkeleton from "@/components/Pages/Profile/ProfileInputSkeleton.vue";
+onMounted(() => {
+  getBiodata();
+});
+
+const store = useStore();
+const route = useRoute();
+const toast = useToast();
+const createProfileLoading = computed(
+  () => store.state.profile.getBiodataloading
+);
+
+const biodataLoading = computed(() => store.state.profile.getBiodataloading);
+const success = computed(() => store.state.profile.profileCreated);
+const biodata = computed(() => store.state.profile.biodata);
+const profileData = computed(() => store.state.member.profile);
+const id = computed(() => route.params.userId);
+
+const getBiodata = () => {
+  store.dispatch("getBiodataByUserId", id.value);
+};
+
+const creationSuccess = computed(() => store.getters["profile/profileCreated"]);
 // Define a validation schema
 const schema = yup.object({
   firstName: yup.string().required("First name is required"),
-  lastName: yup.string().required("Last name is required"),
+  surName: yup.string().required("Last name is required"),
   middleName: yup.string(),
   email: yup.string().required("Email is required").email(),
   mobile1: yup.string().required("Mobile 1 is required"),
   mobile2: yup.string(),
-  address1: yup.string(),
+  address: yup.string(),
   address2: yup.string(),
-  // title: yup.string(),
-  title: yup
-    .object()
-    .shape({
-      value: yup.string().required("Title text is required"),
-      label: yup.string(),
-    })
-    .nullable(),
+  title: yup.string().required("Title text is required"),
   nearestBusStop: yup.string(),
-  LGA: yup
-    .object()
-    .shape({
-      value: yup.string(),
-      label: yup.string(),
-    })
-    .nullable(),
-  state: yup
-    .object()
-    .shape({
-      value: yup.string(),
-      label: yup.string(),
-    })
-    .nullable(),
-  country: yup
-    .object()
-    .shape({
-      value: yup.string(),
-      label: yup.string(),
-    })
-    .nullable(),
-  gender: yup
-    .object()
-    .shape({
-      value: yup.string(),
-      label: yup.string(),
-    })
-    .nullable(),
-  employmentStatus: yup
-    .object()
-    .shape({
-      value: yup.string(),
-      label: yup.string(),
-    })
-    .nullable(),
+  lga: yup.string(),
+  state: yup.string(),
+  country: yup.string(),
+  gender: yup.string(),
+  employmentStatus: yup.string(),
   placeOfBirth: yup.string(),
-  nationality: yup
-    .object()
-    .shape({
-      value: yup.string(),
-      label: yup.string(),
-    })
-    .nullable(),
-  stateOfOrigin: yup
-    .object()
-    .shape({
-      value: yup.string(),
-      label: yup.string(),
-    })
-    .nullable(),
-  maritalStatus: yup
-    .object()
-    .shape({
-      value: yup.string(),
-      label: yup.string(),
-    })
-    .nullable(),
+  nationality: yup.string(),
+  stateOfOrigin: yup.string(),
+  maritalStatus: yup.string(),
+  dateOfBirth: yup.string(),
 });
 
-const router = useRouter();
-
-const goToProfile = () => {
-  router.push("/profile");
-};
-
-const formValues = {
-  firstName: "",
-  lastName: "",
-  middleName: "",
-  email: "dashcode@gmail.com",
-  address1: "",
-  address2: "",
-  title: {
-    value: "",
-    label: "",
-  },
-  mobile1: "",
-  mobile2: "",
-  nearestBusStop: "",
-  LGA: {
-    value: "",
-    label: "",
-  },
-  state: {
-    value: "",
-    label: "",
-  },
-  country: {
-    value: "",
-    label: "",
-  },
-  gender: {
-    value: "",
-    label: "",
-  },
-  employmentStatus: {
-    value: "",
-    label: "",
-  },
-  placeOfBirth: "",
-  nationality: {
-    value: "",
-    label: "",
-  },
-  stateOfOrigin: {
-    value: "",
-    label: "",
-  },
-  maritalStatus: {
-    value: "",
-    label: "",
-  },
-};
-
-const { handleSubmit } = useForm({
+const { handleSubmit, setValues } = useForm({
   validationSchema: schema,
-  initialValues: formValues,
+  initialValues: null,
 });
-// No need to define rules for fields
 
+// No need to define rules for fields
 const { value: firstName, errorMessage: firstNameError } =
   useField("firstName");
-const { value: lastName, errorMessage: lastNameError } = useField("lastName");
+const { value: surName, errorMessage: surNameError } = useField("surName");
 const { value: middleName, errorMessage: middleNameError } =
   useField("middleName");
 const { value: email, errorMessage: emailError } = useField("email");
 const { value: mobile1, errorMessage: mobile1Error } = useField("mobile1");
 const { value: mobile2, errorMessage: mobile2Error } = useField("mobile2");
-const { value: address1, errorMessage: address1Error } = useField("address1");
+const { value: address, errorMessage: addressError } = useField("address");
 const { value: address2, errorMessage: address2Error } = useField("address2");
 const { value: title, errorMessage: titleError } = useField("title");
 const { value: nearestBusStop, errorMessage: nearestBusStopError } =
   useField("nearestBusStop");
-const { value: LGA, errorMessage: LGAError } = useField("LGA");
+const { value: lga, errorMessage: lgaError } = useField("lga");
 const { value: state, errorMessage: stateError } = useField("state");
 const { value: country, errorMessage: countryError } = useField("country");
 const { value: gender, errorMessage: genderError } = useField("gender");
@@ -379,12 +318,129 @@ const { value: stateOfOrigin, errorMessage: stateOfOriginError } =
 const { value: maritalStatus, errorMessage: maritalStatusError } =
   useField("maritalStatus");
 
+const { value: dateOfBirth, errorMessage: dateOfBirthError } =
+  useField("dateOfBirth");
+
 // const { value: email, errorMessage: emailError } = useField("email");
 
+const prepareDetails = (values, type) => {
+  const updateObj = {
+    title: values.title,
+    userId: id.value,
+    id: biodata.value?.id,
+    firstName: values.firstName,
+    middleName: values.middleName,
+    surName: values.surName,
+    mobile1: values.mobile1,
+    mobile2: values.mobile2,
+    email: values.email,
+    address: values.address,
+    nearestBusStop: values.nearestBusStop,
+    lga: values.lga,
+    state: values.state,
+    country: values.country,
+    gender: values.gender,
+    employmentStatus: values.employmentStatus,
+    dateOfBirth: values.dateOfBirth,
+    placeOfBirth: values.placeOfBirth,
+    nationality: values.nationality,
+    stateOfOrigin: values.stateOfOrigin,
+    maritalStatus: values.maritalStatus,
+  };
+  const createObj = {
+    title: values.title,
+    userId: id.value,
+
+    firstName: values.firstName,
+    middleName: values.middleName,
+    surName: values.surName,
+    mobile1: values.mobile1,
+    mobile2: values.mobile2,
+    email: values.email,
+    address: values.address,
+    nearestBusStop: values.nearestBusStop,
+    lga: values.lga,
+    state: values.state,
+    country: values.country,
+    gender: values.gender,
+    employmentStatus: values.employmentStatus,
+    dateOfBirth: values.dateOfBirth,
+    placeOfBirth: values.placeOfBirth,
+    nationality: values.nationality,
+    stateOfOrigin: values.stateOfOrigin,
+    maritalStatus: values.maritalStatus,
+  };
+
+  const obj = type == "create" ? createObj : updateObj;
+  return obj;
+};
 const onSubmit = handleSubmit((values) => {
-  console.log("PersonalDetails: " + JSON.stringify(values));
-  goToProfile();
+  console.log("PersonalDetails: " + JSON.stringify(prepareDetails(values)));
+
+  const hasBiodataError = biodata.value == null;
+
+  if (hasBiodataError) {
+    store.dispatch("createProfile", prepareDetails(values, "create"));
+  }
+  if (!hasBiodataError) {
+    store.dispatch("updateProfile", prepareDetails(values, "edit"));
+  }
+});
+watch(creationSuccess, () => {
+  toast.success("Successfully created profile");
+});
+
+// watch(profileData, (newValue) => {
+//   if (newValue !== null) {
+//     setValues({
+//       firstName: profileData.value.firstName,
+//       surName: profileData.value.surName,
+//       middleName: profileData.value.middleName,
+//       email: profileData.value.email,
+//       mobile1: profileData.value.phoneNumber,
+//     });
+//   }
+// });
+watch(biodataLoading, () => {
+  if (biodata.value !== null) {
+    setValues(biodata.value);
+  } else {
+    setValues({
+      firstName: profileData.value.firstName,
+      surName: profileData.value.lastName,
+      middleName: profileData.value.middleName,
+      email: profileData.value.email,
+      mobile1: profileData.value.phoneNumber,
+    });
+  }
+});
+
+// watch(getBiodataloading, (newValue) => {
+//   if (newValue == false) {
+//     if (biodata.value !== null && biodata.value !== undefined) {
+//       setValues(biodata.value);
+//     } else {
+//       setValues({
+//         firstName: profileData.value.firstName,
+//         surName: profileData.value.surName,
+//         middleName: profileData.value.middleName,
+//         email: profileData.value.email,
+//         mobile1: profileData.value.phoneNumber,
+//       });
+//     }
+//   }
+// });
+
+watch(success, () => {
+  if (success.value) {
+    toast.success("Successful");
+  }
+});
+
+watch(id, (newValue) => {
+  if (newValue !== null && newValue !== undefined) {
+    getBiodata();
+  }
 });
 </script>
-
 <style lang="scss" scoped></style>
