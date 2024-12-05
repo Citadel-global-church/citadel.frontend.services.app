@@ -64,7 +64,7 @@ export const menuItems = [
     icon: "heroicons-outline:clipboard-check",
     link: "/attendance",
   },
-  { title: "Goals", icon: "bx:football", link: "/goals" },
+  // { title: "Goals", icon: "bx:football", link: "/goals" },
   {
     title: "Meetings",
     icon: "bx:merge",
@@ -75,16 +75,16 @@ export const menuItems = [
   //   icon: "heroicons-outline:user",
   //   link: "issue-management",
   // },
-  {
-    title: "Events",
-    icon: "bx:server",
-    link: "/events",
-  },
-  {
-    title: "Notifications",
-    icon: "heroicons-outline:speakerphone",
-    link: "/notifications",
-  },
+  // {
+  //   title: "Events",
+  //   icon: "bx:server",
+  //   link: "/events",
+  // },
+  // {
+  //   title: "Notifications",
+  //   icon: "heroicons-outline:speakerphone",
+  //   link: "/notifications",
+  // },
   {
     title: "Appointments",
     icon: "bx:calendar-plus",
@@ -151,33 +151,7 @@ export const ProfileMenu = [
     link: "/",
   },
 ];
-export const notifications = [
-  {
-    title: "Your order is placed",
-    desc: "Amet minim mollit non deser unt ullamco est sit aliqua.",
-    image: "user.png",
-    link: "#",
-  },
-  {
-    title: "Congratulations Darlene  🎉",
-    desc: "Won the monthly best seller badge",
-    unread: true,
-    image: "user2.png",
-    link: "#",
-  },
-  {
-    title: "Revised Order 👋",
-    desc: "Won the monthly best seller badge",
-    image: "user3.png",
-    link: "#",
-  },
-  {
-    title: "Brooklyn Simmons",
-    desc: "Added you to Top Secret Project group...",
-    image: "user4.png",
-    link: "#",
-  },
-];
+export const notifications = [];
 export const message = [
   {
     title: "Wade Warren",
@@ -622,7 +596,7 @@ export const assignOption = [
 
 export const titleMenu = [
   {
-    value: "Master",
+    value: "Mr",
     label: "Mr",
   },
   {
@@ -789,12 +763,12 @@ export const CIHAddressMenu = [
 
 export const childrenDetailstable = [
   {
-    label: "Last Name",
-    field: "lastName",
-  },
-  {
     label: "First Name",
     field: "firstName",
+  },
+  {
+    label: "Last Name",
+    field: "surName",
   },
 
   {
@@ -804,7 +778,7 @@ export const childrenDetailstable = [
 
   {
     label: "DOB",
-    field: "DOB",
+    field: "dateOfBirth",
   },
   {
     label: "Action",

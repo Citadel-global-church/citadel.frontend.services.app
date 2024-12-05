@@ -39,14 +39,12 @@
             <div
               class="md:max-w-[345px] mx-auto font-normal text-slate-500 dark:text-slate-400 2xl:mt-12 mt-8 uppercase text-sm"
             >
-              Forget It,
               <router-link
                 to="/"
                 class="text-slate-900 dark:text-white font-medium hover:underline"
               >
-                Send me Back
+                Back to The Sign In
               </router-link>
-              to The Sign In
             </div>
           </div>
           <div class="auth-footer text-center">

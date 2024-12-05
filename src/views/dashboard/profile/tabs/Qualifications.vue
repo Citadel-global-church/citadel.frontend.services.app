@@ -1,64 +1,33 @@
 <template>
   <div>
-    <Card bodyClass="p-0">
-      <header
-        class="border-b px-4 border-slate-100 dark:border-slate-700 pt-4 pb-3 flex justify-end items-center"
-      >
-        <div>
-          <Button
-            text="Add new"
-            icon="heroicons-outline:plus"
-            btnClass="btn-dark"
-            @click="push(formValues)"
-          />
-        </div>
-      </header>
+    <ProfileInputSkeleton v-if="qualificationDataLoading" />
+
+    <Card v-else bodyClass="p-0">
       <div class="p-6">
-        <!-- {{ values }} -->
         <form @submit="onSubmit" novalidate>
-          <div
-            v-for="(field, idx) in fields"
-            :key="field.idx"
-            class="lg:grid-cols-3 md:grid-cols-2 grid-cols-1 grid gap-5 mb-5 last:mb-0"
-          >
+          <div class="mb-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Textinput
-              :key="field.idx"
-              :id="`highestQualification_${idx}`"
-              label="Highest Qualification"
-              v-model="values.qualifications[idx].highestQualification"
+              label="highestQualification"
               type="text"
-              :name="`qualifications[${idx}].highestQualification`"
               placeholder="Type your highest qualification"
+              name="highestQualification"
+              v-model="highestQualification"
+              :error="highestQualificationError"
+              classInput="h-[40px]"
             />
+
             <Textinput
-              :key="field.idx"
-              :id="`lowestQualification_${idx}`"
-              label="Lowest Qualification"
+              label="professionalQualification"
               type="text"
-              v-model="values.qualifications[idx].lowestQualification"
-              :name="`qualifications[${idx}].lowestQualification`"
-              placeholder="Type your lowest qualification"
+              placeholder="Type your professional qualification"
+              name="professionalQualification"
+              v-model="professionalQualification"
+              :error="professionalQualificationError"
+              classInput="h-[40px]"
             />
-
-            <div class="flex justify-between items-end space-x-5">
-              <div class="flex-none relative">
-                <button
-                  type="button"
-                  class="inline-flex items-center justify-center h-10 w-10 bg-danger-500 text-lg border rounded border-danger-500 text-white"
-                  @click="remove(idx)"
-                >
-                  <Icon icon="heroicons-outline:trash" />
-                </button>
-              </div>
-            </div>
           </div>
-
           <div class="ltr:text-right rtl:text-left">
-            <Button
-              text="Submit"
-              btnClass="btn-dark"
-              :isDisabled="fields.length === 0"
-            />
+            <Button text="Submit" btnClass="btn btn-primary " />
           </div>
         </form>
       </div>
@@ -66,39 +35,88 @@
   </div>
 </template>
 <script setup>
-import { useForm, useFieldArray } from "vee-validate";
+// import Test from "./test.vue";
+import { useForm, useField } from "vee-validate";
 import Button from "@/components/Button";
 import Card from "@/components/Card";
 import Textinput from "@/components/Textinput";
-import Icon from "@/components/Icon";
+import { useToast } from "vue-toastification";
+import { inject, onMounted, computed, watch } from "vue";
+import { useStore } from "vuex";
+import ProfileInputSkeleton from "@/components/Pages/Profile/ProfileInputSkeleton.vue";
+import * as yup from "yup";
 
-const formValues = {
-  highestQualification: "",
-  lowestQualification: "",
+onMounted(() => {
+  getQualificationData();
+});
+const id = inject("id");
+const store = useStore();
+const getQualificationData = () => {
+  store.dispatch("getQualificationsById", id.value);
 };
+const qualificationData = computed(() => store.state.profile.qualificationData);
 
-// const schema = yup.object().shape({
-//   qualifications: yup
-//     .array()
-//     .of(
-//       yup.object().shape({
-//         name: yup.string().required().label('Name'),
-//         email: yup.string().email().required().label('Email'),
-//       })
-//     )
-//     .strict(),
-// });
+const success = computed(
+  () => store.state.profile.updateQualificationDataSuccess
+);
 
-const { handleSubmit, values } = useForm({
-  initialValues: {
-    qualifications: [formValues],
-  },
+const qualificationDataLoading = computed(
+  () => store.state.profile.getQualificationDataloading
+);
+
+const toast = useToast();
+
+const schema = yup.object({
+  highestQualification: yup.string().required("This field is required"),
+  professionalQualification: yup.string().required("This field is required"),
 });
 
-const { remove, push, fields } = useFieldArray("qualifications");
-const onSubmit = handleSubmit(() => {
-  console.log(
-    "Qualifications: " + JSON.stringify(values.qualifications, null, 2)
-  );
+const { handleSubmit, setValues } = useForm({
+  validationSchema: schema,
+  initialValues: qualificationData.value,
+});
+
+const { value: highestQualification, errorMessage: highestQualificationError } =
+  useField("highestQualification");
+
+const {
+  value: professionalQualification,
+  errorMessage: professionalQualificationError,
+} = useField("professionalQualification");
+
+const prepareDetails = (values, type) => {
+  const updateObj = {
+    id: qualificationData.value?.id,
+    userId: id.value,
+    highestQualification: values.highestQualification,
+    professionalQualification: values.professionalQualification,
+  };
+  const createObj = {
+    userId: id.value,
+    highestQualification: values.highestQualification,
+    professionalQualification: values.professionalQualification,
+  };
+  const obj = type == "create" ? createObj : updateObj;
+  return obj;
+};
+
+const onSubmit = handleSubmit((values) => {
+  const hasDataError = qualificationData.value == null;
+  if (hasDataError) {
+    store.dispatch("createQualification", prepareDetails(values, "create"));
+  }
+  if (!hasDataError) {
+    store.dispatch("updateQualification", prepareDetails(values, "edit"));
+  }
+});
+
+watch(qualificationData, () => {
+  setValues(qualificationData.value);
+});
+
+watch(success, () => {
+  if (success.value) {
+    toast.success("Successful");
+  }
 });
 </script>

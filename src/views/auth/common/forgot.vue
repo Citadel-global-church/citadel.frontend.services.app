@@ -4,13 +4,17 @@
       label="Email"
       type="email"
       placeholder="Type your email"
-      name="emil"
-      v-model="email"
+      name="emailAddress"
+      v-model="emailAddress"
       :error="emailError"
       classInput="h-[48px]"
     />
 
-    <button type="submit" class="btn btn-primary block w-full text-center">
+    <button
+      type="submit"
+      :disabled="isLoading"
+      class="btn btn-primary block w-full text-center disabled:opacity-50"
+    >
       Send recovery email
     </button>
   </form>
@@ -19,6 +23,9 @@
 import Textinput from "@/components/Textinput";
 import { useField, useForm } from "vee-validate";
 import * as yup from "yup";
+import { useStore } from "vuex";
+import { computed, watch, reactive } from "vue";
+import { useRouter } from "vue-router";
 
 export default {
   components: {
@@ -30,26 +37,44 @@ export default {
     };
   },
   setup() {
+    // eslint-disable-next-line no-unused-vars
+    const router = useRouter();
+    const { state, dispatch } = useStore();
+    const isLoading = computed(() => state.auth.loading);
+    const success = computed(() => state.auth.forgotsuccess);
+
     // Define a validation schema
     const schema = yup.object({
-      email: yup.string().required().email(),
+      emailAddress: yup.string().required("Email is required").email(),
     });
-
+    const formState = reactive({
+      emailAddress: "",
+    });
     const { handleSubmit } = useForm({
       validationSchema: schema,
+      initialValues: formState,
     });
     // No need to define rules for fields
 
-    const { value: email, errorMessage: emailError } = useField("email");
+    const { value: emailAddress, errorMessage: emailError } =
+      useField("emailAddress");
 
-    const onSubmit = handleSubmit(() => {
-      // console.warn(values);
+    const onSubmit = handleSubmit((value) => {
+      dispatch("forgotPassword", value);
     });
 
+    watch(success, () => {
+      if (success.value) {
+        router.push(
+          `/reset-password/${encodeURIComponent(emailAddress.value)}`
+        );
+      }
+    });
     return {
-      email,
+      emailAddress,
       emailError,
       onSubmit,
+      isLoading,
     };
   },
 };

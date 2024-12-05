@@ -1,5 +1,5 @@
 <template>
-  <div class="grid lg:grid-cols-3 md:grid-cols-2 grid-cols-1 gap-5">
+  <div class="grid 2xl:grid-cols-4 md:grid-cols-3 grid-cols-1 gap-5">
     <div
       class="rounded-md bg-white dark:bg-slate-700 h-full p-6 shadow-base"
       v-for="(item, i) in items"

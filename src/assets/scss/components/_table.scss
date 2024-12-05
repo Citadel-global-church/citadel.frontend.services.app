@@ -35,7 +35,7 @@ table.vgt-table {
   &.centered {
     td,
     th {
-      @apply text-center;
+      @apply text-left;
     }
   }
   &.table-head,
@@ -90,10 +90,10 @@ table.vgt-table td {
 }
 .vgt-table {
   &.lesspadding td {
-    @apply px-3 py-2;
+    @apply px-6 py-2;
   }
   &.lesspadding2 td {
-    @apply px-3 py-[14px];
+    @apply px-6 py-[14px];
   }
 }
 .table-fit.vgt-table {

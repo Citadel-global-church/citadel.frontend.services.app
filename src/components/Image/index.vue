@@ -27,15 +27,15 @@ export default {
     },
     alt: {
       type: String,
-      default: 'image title',
+      default: "image title",
     },
     imageClass: {
       type: String,
-      default: '',
+      default: "",
     },
     parentClass: {
       type: String,
-      default: '',
+      default: "",
     },
   },
 };

@@ -1,16 +1,12 @@
+<!-- eslint-disable no-unused-vars -->
 <template>
   <div>
+    <!-- {{ query }}{{ zoneObj }} -->
     <Card noborder>
       <div class="md:flex pb-6 items-center justify-between">
-        <div
-          class="flex md:mb-0 mb-3 border border-gray-200 rounded text-sm"
-        ></div>
-        <div
-          class="md:flex md:space-x-3 items-center flex-none"
-          :class="window.width < 768 ? 'space-x-rb' : ''"
-        >
+        <div class="flex gap-x-4 rounded text-sm">
           <InputGroup
-            v-model="searchTerm"
+            v-model="query.searchTerm"
             placeholder="Search"
             type="text"
             prependIcon="heroicons-outline:search"
@@ -18,22 +14,20 @@
             classInput="min-w-[220px] !h-9"
           />
 
-          <!-- <VueTailwindDatePicker
-            v-model="dateValue"
-            :formatter="formatter"
-            input-classes="form-control h-[36px]"
-            placeholder="Select date"
-            as-single
-          /> -->
           <VueSelect
             class="min-w-[200px] w-full md:w-auto h-9"
-            v-model="zone"
+            v-model.value="zoneObj"
             :options="zoneOptions"
             placeholder="Select zone"
             name="zone"
           />
+        </div>
+        <div
+          class="md:flex md:space-x-3 items-center flex-none"
+          :class="window.width < 768 ? 'space-x-rb' : ''"
+        >
           <Button
-            icon="heroicons-outline:plus-sm"
+            icon="mdi:house-group-add"
             text="Add center"
             btnClass=" btn-primary font-normal btn-sm "
             iconClass="text-lg"
@@ -50,26 +44,13 @@
         <vue-good-table
           :columns="columns"
           styleClass=" vgt-table  centered "
-          :rows="advancedTable"
+          :rows="centers"
           :sort-options="{
             enabled: false,
           }"
           :pagination-options="{
             enabled: true,
             perPage: perpage,
-          }"
-          :search-options="{
-            enabled: true,
-            externalQuery: searchTerm,
-          }"
-          :select-options="{
-            enabled: true,
-            selectOnCheckboxOnly: true, // only select when checkbox is clicked instead of the row
-            selectioninfoClass: 'table-input-checkbox',
-            selectionText: 'rows selected',
-            clearSelectionText: 'clear',
-            disableSelectinfo: true, // disable the select info-500 panel on top
-            selectAllByGroup: true, // when used in combination with a grouped table, add a checkbox in the header row to check/uncheck the entire group
           }"
         >
           <template v-slot:table-row="props">
@@ -127,9 +108,9 @@
                   ><Icon icon="heroicons-outline:dots-vertical"
                 /></span>
                 <template v-slot:menus>
-                  <MenuItem v-for="(item, i) in filteredActions" :key="i">
+                  <MenuItem v-for="(item, i) in actions" :key="i">
                     <div
-                      @click="item.doit(item.name)"
+                      @click="item.doit(item.name, props.row)"
                       :class="{
                         'bg-danger-500 text-danger-500 bg-opacity-30 hover:bg-opacity-100 hover:text-white':
                           item.name === 'delete',
@@ -151,12 +132,12 @@
           <template #pagination-bottom="props">
             <div class="py-4 px-3">
               <Pagination
-                :total="50"
-                :current="current"
-                :per-page="perpage"
+                :total="total"
+                :current="query.pageNumber"
+                :per-page="query.pageSize"
                 :pageRange="pageRange"
-                @page-changed="current = $event"
-                :pageChanged="props.pageChanged"
+                @page-changed="query.pageNumber = $event"
+                :pageChanged="perPage"
                 :perPageChanged="props.perPageChanged"
                 enableSearch
                 enableSelect
@@ -170,15 +151,46 @@
       </div>
     </Card>
   </div>
+
+  <Modal
+    title="Delete Member"
+    label="Small modal"
+    labelClass="btn-outline-danger"
+    ref="modal"
+    sizeClass="max-w-md"
+    themeClass="bg-danger-500"
+  >
+    <div class="text-base text-slate-600 dark:text-slate-300 mb-6">
+      Are you sure you want to delete this member?
+    </div>
+
+    <template v-slot:footer>
+      <div class="flex gap-x-5">
+        <Button
+          :disabled="deleteloading"
+          text="Cancel"
+          btnClass="btn-outline-secondary btn-sm"
+          @click="$refs.modal.closeModal()"
+        />
+        <Button
+          text="Delete"
+          :disabled="deleteloading"
+          btnClass="btn-danger btn-sm"
+          @click="handleDelete"
+        />
+      </div>
+    </template>
+  </Modal>
   <Modal
     title="Confirm action"
     label="Small modal"
     labelClass="btn-outline-dark"
-    ref="modal"
+    ref="modalStatus"
     sizeClass="max-w-md"
+    :themeClass="`${type === 'approve' ? 'bg-green-500' : 'bg-danger-500'}`"
   >
     <div class="text-base text-slate-600 dark:text-slate-300 mb-6">
-      Are you sure about this action?
+      Are you sure you want to {{ type.toLowerCase() }} this center?
     </div>
     <div v-if="type.toLowerCase() === 'delist'">
       <textarea
@@ -186,19 +198,24 @@
         class="px-3 py-3 border border-gray-200 rounded-lg w-full"
         rows="4"
         placeholder="Provide reason"
+        v-model="reason"
       ></textarea>
     </div>
     <template v-slot:footer>
       <div class="flex gap-x-5">
         <Button
+          :disabled="deleteloading"
           text="Cancel"
           btnClass="btn-outline-secondary btn-sm "
-          @click="$refs.modal.closeModal()"
+          @click="$refs.modalStatus.closeModal()"
         />
         <Button
+          :disabled="deleteloading"
           text="Proceed"
-          btnClass="btn-dark btn-sm"
-          @click="$refs.modal.closeModal()"
+          :btnClass="` btn-sm ${
+            type === 'approve' ? 'btn-success' : 'btn-danger'
+          }`"
+          @click="handleStatus"
         />
       </div>
     </template>
@@ -214,7 +231,7 @@
     "
     labelClass="btn-outline-dark"
     ref="modalChange"
-    sizeClass="max-w-sm"
+    sizeClass="max-w-md"
   >
     <AddRecord v-if="type === 'add'" />
     <EditRecord v-if="type === 'edit'" />
@@ -235,6 +252,20 @@ import { advancedTable } from "@/constant/basic-tablle-data";
 import AddRecord from "../center-add.vue";
 import EditRecord from "../edit-center.vue";
 import window from "@/mixins/window";
+import { useStore } from "vuex";
+import { debounce } from "lodash";
+import moment from "moment";
+import { useToast } from "vue-toastification";
+
+import {
+  provide,
+  ref,
+  computed,
+  watch,
+  reactive,
+  getCurrentInstance,
+  onMounted,
+} from "vue";
 
 export default {
   mixins: [window],
@@ -254,6 +285,149 @@ export default {
     VueTailwindDatePicker,
   },
 
+  setup() {
+    // onMounted(() => {
+    //   dispatch("getAllCenters", query);
+    //   dispatch("getZones");
+    //   id.value = getCurrentInstance().data.id;
+    // });
+
+    onMounted(() => {
+      dispatch("getAllCenters", query);
+      dispatch("getZones", { pageNumber: 1, pageSize: 10000 });
+      id.value = getCurrentInstance().data.id;
+    });
+
+    const { state, dispatch } = useStore();
+    const toast = useToast();
+    const deleteCenterSuccess = computed(
+      () => state.center.deleteCenterSuccess
+    );
+    const zoneObj = ref({
+      label: "",
+      zoneId: "",
+    });
+    const zone = ref("");
+
+    const initialValue = {
+      pageNumber: 1,
+      pageSize: 10,
+      name: "",
+      searchTerm: "",
+      zoneId: "",
+    };
+    // const zoneId = computed(() => zone.value.zoneId);
+    const query = reactive({
+      ...initialValue,
+    });
+
+    const id = ref(null);
+
+    const zoneOptions = computed(() =>
+      state?.zone?.zones.map((i) => {
+        return {
+          label: i.zoneName,
+          zoneId: i.id,
+        };
+      })
+    );
+    const modal = ref(null);
+    const modalChange = ref(null);
+    const closeModal = () => modalChange.value.closeModal();
+    const closeDeleteModal = () => modal.value.closeModal();
+
+    const loading = computed(() => state.center.loading);
+    const centers = computed(() =>
+      state.center.centers.map((i) => {
+        i.createdAt = moment(i.createdAt).format("ll");
+        i.location = i.location ? i.location : "-";
+        i.total = i.total ? i.total : 0;
+        return i;
+      })
+    );
+    const total = computed(() => state.center.total);
+    const addsuccess = computed(() => state.center.addsuccess);
+    const deleteloading = computed(() => state.center.deleteloading);
+    const deletesuccess = computed(() => state.center.deletesuccess);
+
+    provide("closeModal", closeModal);
+    // eslint-disable-next-line no-unused-vars
+    function handleDelete() {
+      dispatch("deleteCenter", state.center.deleteId);
+    }
+
+    watch(deleteCenterSuccess, () => {
+      if (deleteCenterSuccess.value) {
+        console.log("SuccessfullyDeleted");
+        closeDeleteModal();
+        toast.success("Successfully Deleted");
+        dispatch("getAllCenters", query);
+      }
+    });
+    function perPage({ currentPage }) {
+      query.pageNumber = currentPage;
+    }
+    // Define a debounce delay (e.g., 500 milliseconds)
+    const debounceDelay = 800;
+    const debouncedSearch = debounce((searchValue) => {
+      dispatch("getAllCenters", { ...query, name: searchValue });
+    }, debounceDelay);
+    watch(addsuccess, () => {
+      addsuccess.value && dispatch("getAllCenters", query);
+      modalChange.value.closeModal();
+    });
+
+    watch(deletesuccess, () => {
+      if (deletesuccess.value) {
+        dispatch("getAllCenters", query);
+        modal.value.closeModal();
+      }
+    });
+
+    watch(
+      () => query.searchTerm,
+      () => {
+        debouncedSearch(query.searchTerm);
+      }
+    );
+    watch(
+      () => query.pageNumber,
+      () => {
+        dispatch("getAllCenters", query);
+      }
+    );
+    watch(zoneObj, (newValue) => {
+      query.zoneId = newValue.zoneId;
+    });
+    watch(
+      () => query.zoneId,
+      () => {
+        dispatch("getAllCenters", query);
+      }
+    );
+    provide("closeModal", closeModal);
+    provide("zoneOptions", zoneOptions);
+    provide("initialValue", initialValue);
+    provide("query", query);
+
+    return {
+      // zoneId,
+
+      zone,
+      zoneObj,
+      zoneOptions,
+      modal,
+      modalChange,
+      centers,
+      loading,
+      total,
+      query,
+      perPage,
+      deleteloading,
+      handleDelete,
+    };
+  },
+
   data() {
     return {
       advancedTable,
@@ -263,6 +437,7 @@ export default {
       searchTerm: "",
       type: "",
       id: null,
+      reason: "",
       filters: ["all", "pending"],
       activeFilter: "all",
       dateValue: null,
@@ -270,32 +445,47 @@ export default {
         date: "DD MMM YYYY",
         month: "MMM",
       },
-      zone: "",
-      zoneOptions: [
+      // zone: "",
+      // zoneOptions: [
+      //   {
+      //     value: "option2",
+      //     label: "Zone 1",
+      //   },
+      //   {
+      //     value: "option3",
+      //     label: "Zone 2",
+      //   },
+      // ],
+      center: "",
+      centerOptions: [
         {
           value: "option2",
-          label: "Zone 1",
+          label: "Center 1",
         },
         {
           value: "option3",
-          label: "Zone 2",
+          label: "Center 2",
         },
       ],
+      // provide: {
+      //   // Provide a method
+      //   closeModal: () => this.$refs.Modal.closeModal(),
+      // },
       actions: [
         {
-          name: "Approve",
+          name: "approve",
           icon: "ph:check",
           doit: (name) => {
             this.type = name;
-            this.$refs.modal.openModal();
+            this.$refs.modalStatus.openModal();
           },
         },
         {
-          name: "Delist",
+          name: "delist",
           icon: "ph:x-light",
           doit: (name) => {
             this.type = name;
-            this.$refs.modal.openModal();
+            this.$refs.modalStatus.openModal();
           },
         },
         {
@@ -306,16 +496,27 @@ export default {
             this.$refs.modalChange.openModal();
           },
         },
+        {
+          name: "edit",
+          icon: "heroicons:pencil-square",
+          doit: (name, data) => {
+            this.type = name;
+            this.$refs.modalChange.openModal();
+            this.$store.dispatch("setCenterToUpdate", data);
+          },
+        },
 
         {
           name: "delete",
           icon: "heroicons-outline:trash",
-          doit: (name) => {
+          doit: (name, { id }) => {
             this.type = name;
             this.$refs.modal.openModal();
+            this.$store.dispatch("setDeleteId", id);
           },
         },
       ],
+
       options: [
         {
           value: "25",
@@ -337,11 +538,11 @@ export default {
       columns: [
         {
           label: "Date created",
-          field: "date",
+          field: "createdAt",
         },
         {
           label: "Name",
-          field: "name",
+          field: "centerName",
         },
 
         {
@@ -362,6 +563,29 @@ export default {
     };
   },
   methods: {
+    handleStatus() {
+      if (this.type === "approve") {
+        this.$store.dispatch("enableUser", this.id);
+      } else {
+        this.$store.dispatch("disableUser", this.id);
+      }
+    },
+    handleActions(value) {
+      if (value === "active") {
+        return this.actions.filter((i) => i.name.toLowerCase() !== "approve");
+      }
+      if (value === "delist") {
+        return this.actions.filter((i) => i.name.toLowerCase() !== "delist");
+      }
+      if (value === "pendingactivation") {
+        return this.actions.filter(
+          (i) =>
+            i.name.toLowerCase() !== "delist" &&
+            i.name.toLowerCase() !== "approve"
+        );
+      }
+      return value;
+    },
     generateAction(name, id) {
       this.id = id;
 

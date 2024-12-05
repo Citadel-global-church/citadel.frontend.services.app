@@ -35,7 +35,7 @@
           />
 
           <Button
-            icon="heroicons-outline:plus-sm"
+            icon="ri:user-add-line"
             text="Add Member"
             btnClass=" btn-primary font-normal btn-sm "
             iconClass="text-lg"
@@ -63,15 +63,6 @@
           :search-options="{
             enabled: true,
             externalQuery: searchTerm,
-          }"
-          :select-options="{
-            enabled: true,
-            selectOnCheckboxOnly: true, // only select when checkbox is clicked instead of the row
-            selectioninfoClass: 'table-input-checkbox',
-            selectionText: 'rows selected',
-            clearSelectionText: 'clear',
-            disableSelectinfo: true, // disable the select info-500 panel on top
-            selectAllByGroup: true, // when used in combination with a grouped table, add a checkbox in the header row to check/uncheck the entire group
           }"
         >
           <template v-slot:table-row="props">
@@ -233,7 +224,6 @@ import InputGroup from "@/components/InputGroup";
 import Pagination from "@/components/Pagination";
 import Modal from "@/components/Modal/Modal";
 import { MenuItem } from "@headlessui/vue";
-import { advancedTable } from "@/constant/basic-tablle-data";
 import AddRecord from "../member-add.vue";
 import EditRecord from "../member-edit.vue";
 import ViewRecord from "../member-preview.vue";
@@ -258,7 +248,47 @@ export default {
 
   data() {
     return {
-      advancedTable,
+      advancedTable: [
+        {
+          id: 1,
+          order: 951,
+          name: "Welfare",
+          dob: "3/26/2022",
+          hod: "John Woo",
+          members: "53",
+          gender: "male",
+          phone: "08179324877",
+          email: "johnwoo@email.com",
+          status: "active",
+          action: null,
+        },
+        {
+          id: 1,
+          order: 951,
+          name: "Choir",
+          dob: "3/26/2022",
+          hod: "Chris Kyle",
+          members: "53",
+          gender: "male",
+          phone: "08179324877",
+          email: "johnwoo@email.com",
+          status: "active",
+          action: null,
+        },
+        {
+          id: 1,
+          order: 951,
+          name: "Visitation",
+          dob: "3/26/2022",
+          hod: "Janne joane",
+          members: "53",
+          gender: "male",
+          phone: "08179324877",
+          email: "johnwoo@email.com",
+          status: "active",
+          action: null,
+        },
+      ],
       current: 1,
       perpage: 10,
       pageRange: 5,
@@ -345,7 +375,14 @@ export default {
           label: "Email",
           field: "email",
         },
-
+        {
+          label: "Dob",
+          field: "dob",
+        },
+        {
+          label: "Status",
+          field: "status",
+        },
         {
           label: "Action",
           field: "action",

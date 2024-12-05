@@ -12,7 +12,7 @@
         class="right-column relative bg-white dark:bg-slate-800 h-screen overflow-y-auto"
       >
         <div
-          class="inner-content h-full flex flex-col bg-white dark:bg-slate-800"
+          class="inner-content max-h-full flex flex-col bg-white dark:bg-slate-800"
         >
           <div class="auth-box h-full flex flex-col justify-center">
             <div class="mobile-logo text-center mb-6 4xl:hidden block">
@@ -52,7 +52,7 @@
             </div>
           </div>
           <div class="auth-footer text-center">
-            Copyright {{ new Date().getFullYear() }}, Dashcode All Rights
+            Copyright {{ new Date().getFullYear() }}, Citadel All Rights
             Reserved.
           </div>
         </div>

@@ -25,7 +25,7 @@
             404 <span class="text-gray-800">ERROR!</span>
           </h1>
           <h2 class="text-xl font-bold text-gray-800 mb-8">PAGE NOT FOUND</h2>
-          <router-link to="/">
+          <router-link :to="-1">
             <button
               class="text-white btn-dark px-12 py-4 rounded-full uppercase"
             >

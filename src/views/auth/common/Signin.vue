@@ -4,12 +4,12 @@
       label="Email"
       type="email"
       placeholder="Type your email"
-      name="username"
-      v-model="username"
-      :error="usernameError"
+      name="emailAddress"
+      v-model="emailAddress"
+      :error="emailAddressError"
       classInput="h-[48px]"
     />
-    <Textinput
+    <!-- <Textinput
       label="Password"
       type="password"
       placeholder="Type your password"
@@ -18,7 +18,7 @@
       :error="passwordError"
       hasicon
       classInput="h-[48px]"
-    />
+    /> -->
 
     <div class="flex justify-between">
       <label class="cursor-pointer flex items-start">
@@ -64,14 +64,12 @@
 </template>
 <script>
 import { computed, watch } from "vue";
-import { useRoute } from "vue-router";
 import { useStore } from "vuex";
 import Textinput from "@/components/Textinput";
 import { useField, useForm } from "vee-validate";
 import * as yup from "yup";
-
 import { useRouter } from "vue-router";
-import { useToast } from "vue-toastification";
+
 export default {
   components: {
     Textinput,
@@ -83,18 +81,17 @@ export default {
   },
   setup() {
     // eslint-disable-next-line no-unused-vars
-    const route = useRoute();
     const { state, dispatch } = useStore();
     const isLoading = computed(() => state.auth.loading);
-    const success = computed(() => state.auth.loginsuccess);
+    const success = computed(() => state.auth.loginchecksuccess);
+    const data = computed(() => state.auth.logincheckdata);
     const error = computed(() => state.auth.error);
     // Define a validation schema
     const schema = yup.object({
-      username: yup.string().required("Email is required").email(),
-      password: yup.string().required("Password is required"),
+      emailAddress: yup.string().required("Email is required").email(),
+      // password: yup.string().required("Password is required"),
     });
 
-    const toast = useToast();
     const router = useRouter();
 
     // eslint-disable-next-line no-unused-vars
@@ -103,8 +100,8 @@ export default {
     };
 
     const formValues = {
-      username: "",
-      password: "",
+      emailAddress: "",
+      // password: "",
     };
 
     const { handleSubmit } = useForm({
@@ -113,28 +110,29 @@ export default {
     });
     // No need to define rules for fields
 
-    const { value: username, errorMessage: usernameError } =
-      useField("username");
+    const { value: emailAddress, errorMessage: emailAddressError } =
+      useField("emailAddress");
     const { value: password, errorMessage: passwordError } =
       useField("password");
 
     const onSubmit = handleSubmit((values) => {
-      dispatch("login", { ...values, grantType: "password" });
+      dispatch("loginCheck", {
+        username: values.emailAddress,
+      });
     });
     watch(success, () => {
-      toast.success("Login successful");
-      if (route.query.redirect_from) {
-        window.location.replace(route.query.redirect_from);
-      } else {
-        window.location.replace("/overview");
-        goToProfile();
-      }
+      // toast.success("Sign up successful")
+      success.value &&
+        router.push(
+          `/verify/${encodeURIComponent(emailAddress.value)}/${data.value}`
+        );
     });
+
     return {
-      username,
+      emailAddress,
       isLoading,
       error,
-      usernameError,
+      emailAddressError,
       password,
       passwordError,
       onSubmit,

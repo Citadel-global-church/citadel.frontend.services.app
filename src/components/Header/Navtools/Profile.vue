@@ -4,7 +4,11 @@
       <div class="flex-1 mr-[10px]">
         <div class="lg:h-8 lg:w-8 h-7 w-7 rounded-full">
           <img
-            src="@/assets/images/all-img/user.png"
+            :src="`${
+              profile?.avatarUrl
+                ? profile?.avatarUrl
+                : require('@/assets/images/all-img/user.png')
+            }`"
             alt=""
             class="block w-full h-full object-cover rounded-full"
           />
@@ -15,7 +19,7 @@
       >
         <span
           class="overflow-hidden text-ellipsis whitespace-nowrap w-[85px] block"
-          >Albert Flores</span
+          >{{ profile?.fullName }}</span
         >
         <span class="text-base inline-block ml-[10px]"
           ><Icon icon="heroicons-outline:chevron-down"></Icon
@@ -46,10 +50,12 @@
   </Dropdown>
 </template>
 <script>
+import { computed } from "vue";
 import { MenuItem } from "@headlessui/vue";
 import Dropdown from "@/components/Dropdown";
 import Icon from "@/components/Icon";
 import store from "@/store";
+import { useStore } from "vuex";
 
 export default {
   components: {
@@ -64,7 +70,9 @@ export default {
           label: "Profile",
           icon: "heroicons-outline:user",
           link: () => {
-            this.$router.push("profile");
+            const userId = store.state.auth.userData.id;
+            // store.dispatch("getUserById", userId);
+            this.$router.push("/profile/" + userId);
           },
         },
 
@@ -84,6 +92,15 @@ export default {
           },
         },
       ],
+    };
+  },
+
+  setup() {
+    const { state } = useStore();
+    const profile = computed(() => state.auth.userData);
+    console.log("Bearer " + state.auth.accessToken);
+    return {
+      profile,
     };
   },
 };

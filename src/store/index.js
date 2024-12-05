@@ -17,6 +17,7 @@ import zone from "./app/zone";
 import center from "./app/center";
 import apptodo from "./app/todo";
 import auth from "./app/auth";
+import profile from "./app/profile";
 
 export default createStore({
   state: {
@@ -108,6 +109,7 @@ export default createStore({
     venue,
     zone,
     center,
+    profile,
     auth,
   },
 });

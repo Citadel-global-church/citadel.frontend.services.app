@@ -125,7 +125,7 @@
       </div>
 
       <div class="text-right space-x-3 mt-8">
-        <Button type="submit" text="Save record" btnClass="btn-dark" />
+        <Button type="submit" text="Add member" btnClass="btn-dark" />
       </div>
     </Card>
   </form>

@@ -1,7 +1,7 @@
 <template>
   <div>
     <Modal
-      :activeModal="store.state.zone.addmodal"
+      :activeModal="state.zone.addmodal"
       @close="closeModal"
       title="Create Zone"
       centered
@@ -11,16 +11,16 @@
           label="Name"
           type="text"
           placeholder="Zone Name"
-          name="name"
-          v-model.trim="name"
-          :error="nameError"
+          name="zoneName"
+          v-model.trim="zoneName"
+          :error="zoneNameError"
         />
         <div class="assagin space-y-4">
           <Textarea
             label="Description"
             placeholder="Zone description"
-            v-model="desc"
-            :error="descoError"
+            v-model="description"
+            :error="descriptionError"
           />
         </div>
 
@@ -33,41 +33,49 @@
 </template>
 <script setup>
 import Button from "@/components/Button";
-// import FormGroup from "@/components/FormGroup";
 import Modal from "@/components/Modal";
-// import VueSelect from "@/components/Select/VueSelect";
 import Textarea from "@/components/Textarea";
 import Textinput from "@/components/Textinput";
-import { v4 as uuidv4 } from "uuid";
 import { useField, useForm } from "vee-validate";
-// import vSelect from "vue-select";
 import { useStore } from "vuex";
 import * as yup from "yup";
-// import { assignOption } from "@/constant/data";
-let store = useStore();
+import { useToast } from "vue-toastification";
 
+import { computed, watch } from "vue";
+
+const { state, dispatch } = useStore();
+const success = computed(() => state.zone.addZoneSuccess);
+const toast = useToast();
 const schema = yup.object({
-  name: yup.string().required("Title is required"),
-  desc: yup.string().required("Description is required"),
+  zoneName: yup.string().required("Name is required"),
+  description: yup.string().required("Description is required"),
 });
+
 const { handleSubmit } = useForm({
   validationSchema: schema,
 });
-const { value: name, errorMessage: nameError } = useField("name");
-const { value: desc, errorMessage: descoError } = useField("desc");
 
-// const { value: category, errorMessage: errorCategory } = useField("category");
+const { value: zoneName, errorMessage: zoneNameError } = useField("zoneName");
+const { value: description, errorMessage: descriptionError } =
+  useField("description");
 
-const addZone = handleSubmit(() => {
-  store.dispatch("addZone", {
-    id: uuidv4(),
-    name: "",
-    desc: "",
-  });
+const addZone = handleSubmit((values) => {
+  dispatch("addZone", values);
 });
 
 const closeModal = () => {
-  store.dispatch("closeModal");
+  dispatch("closeModal");
 };
+
+watch(success, () => {
+  if (success.value) {
+    toast.success("Successfully Created");
+    dispatch("getZones");
+  }
+
+  closeModal();
+
+  // getAllZones();
+});
 </script>
 <style lang=""></style>

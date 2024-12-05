@@ -17,10 +17,10 @@
           placeholder="Add your middle name"
         />
         <Textinput
-          label="Surname"
+          label="surName"
           type="text"
-          v-model="surname"
-          :error="surnameError"
+          v-model="surName"
+          :error="surNameError"
           placeholder="Add your surnanme"
         />
         <Select
@@ -44,16 +44,16 @@
         <Textinput
           label="Phone"
           type="text"
-          v-model="phoneNumber"
-          :error="phoneNumberError"
+          v-model="mobile1"
+          :error="mobile1Error"
           placeholder="Add your phone"
         />
         <div class="lg:col-span-2 col-span-1">
           <Textinput
             label="Email"
             type="email"
-            v-model="emailAddress"
-            :error="emailAddressError"
+            v-model="email"
+            :error="emailError"
             placeholder="Add your email"
           />
         </div>
@@ -85,8 +85,8 @@
         <div class="lg:col-span-2 col-span-1">
           <Textinput
             label="Residential Address"
-            v-model="residentialAddress"
-            :error="residentialAddressError"
+            v-model="address"
+            :error="addressError"
             placeholder="Enter our residential address"
           />
         </div>
@@ -125,14 +125,16 @@
       </div>
 
       <div class="text-right space-x-3 mt-8">
-        <Button type="submit" text="Save record" btnClass="btn-dark" />
+        <Button type="submit" text="Add member" btnClass="btn-dark" />
       </div>
     </Card>
   </form>
 </template>
 <script setup>
-import { reactive } from "vue";
+import { reactive, computed, watch } from "vue";
+import { useToast } from "vue-toastification";
 import { useField, useForm } from "vee-validate";
+import { useStore } from "vuex";
 import * as yup from "yup";
 import Button from "@/components/Button";
 import Card from "@/components/Card";
@@ -140,16 +142,19 @@ import FormGroup from "@/components/FormGroup";
 import Textinput from "@/components/Textinput";
 import Select from "@/components/Select";
 
+const toast = useToast();
+const { state: vState, dispatch } = useStore();
+const success = computed(() => vState.profile.profileCreated);
 const formData = reactive({
   dateOfVisit: "",
-  surname: "",
+  surName: "",
   firstname: "",
   middlename: "",
   gender: "",
   dateOfBirth: "",
-  phoneNumber: "",
-  emailAddress: "",
-  residentialAddress: "",
+  mobile1: "",
+  email: "",
+  address: "",
   nearestBusStop: "",
   city: "",
   state: "",
@@ -159,17 +164,17 @@ const formData = reactive({
 });
 const formDataSchema = yup.object().shape({
   dateOfVisit: yup.date().required("Date of Visit is required"),
-  surname: yup.string().required("Surname is required"),
+  surName: yup.string().required("surName is required"),
   firstname: yup.string().required("Firstname is required"),
   middlename: yup.string().required("Middlename is required"),
   gender: yup.string().required("Gender is required"),
   dateOfBirth: yup.date().required("Date of Birth is required"),
-  phoneNumber: yup.string().required("Phone Number is required"),
-  emailAddress: yup
+  mobile1: yup.string().required("Phone Number is required"),
+  email: yup
     .string()
     .email("Invalid email format")
     .required("Email Address is required"),
-  residentialAddress: yup.string().required("Residential Address is required"),
+  address: yup.string().required("Residential Address is required"),
   nearestBusStop: yup.string().required("Nearest Bus Stop is required"),
   city: yup.string().required("City is required"),
   state: yup.string().required("State is required"),
@@ -195,11 +200,10 @@ const { handleSubmit } = useForm({
   initialValues: formData,
 });
 
-const { value: emailAddress, errorMessage: emailAddressError } =
-  useField("emailAddress");
+const { value: email, errorMessage: emailError } = useField("email");
 const { value: dateOfVisit, errorMessage: dateOfVisitError } =
   useField("dateOfVisit");
-const { value: surname, errorMessage: surnameError } = useField("surname");
+const { value: surName, errorMessage: surNameError } = useField("surName");
 const { value: firstname, errorMessage: firstnameError } =
   useField("firstname");
 const { value: middlename, errorMessage: middlenameError } =
@@ -207,10 +211,8 @@ const { value: middlename, errorMessage: middlenameError } =
 const { value: gender, errorMessage: genderError } = useField("gender");
 const { value: dateOfBirth, errorMessage: dateOfBirthError } =
   useField("dateOfBirth");
-const { value: phoneNumber, errorMessage: phoneNumberError } =
-  useField("phoneNumber");
-const { value: residentialAddress, errorMessage: residentialAddressError } =
-  useField("residentialAddress");
+const { value: mobile1, errorMessage: mobile1Error } = useField("mobile1");
+const { value: address, errorMessage: addressError } = useField("address");
 const { value: nearestBusStop, errorMessage: nearestBusStopError } =
   useField("nearestBusStop");
 const { value: city, errorMessage: cityError } = useField("city");
@@ -222,7 +224,19 @@ const { value: placeOfVisit, errorMessage: placeOfVisitError } =
   useField("placeOfVisit");
 
 const onSubmit = handleSubmit((values) => {
-  console.log("🚀 ~ file: member-add.vue:163 ~ onSubmit ~ values:", values);
+  console.log("🚀 ~ file: member-add.vue:163 ~ onSubmit ~ values:", {
+    values,
+    isFirstTime: true,
+  });
+  dispatch("createProfile", {
+    ...values,
+    isFirstTime: true,
+  });
+});
+watch(success, () => {
+  if (success.value) {
+    toast.success("First timer added");
+  }
 });
 </script>
 <style lang=""></style>

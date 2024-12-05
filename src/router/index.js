@@ -38,9 +38,23 @@ const routes = [
     beforeEnter: guardAuth,
   },
   {
+    path: "/reset-password/:email",
+    name: "reset-password",
+    component: () => import("@/views/auth/reset-password.vue"),
+    meta: { auth: true },
+    beforeEnter: guardAuth,
+  },
+  {
     path: "/email-verify/:email",
     name: "email-verify",
     component: () => import("@/views/auth/email-authenticate.vue"),
+    meta: { auth: true },
+    beforeEnter: guardAuth,
+  },
+  {
+    path: "/verify/:email/:type",
+    name: "verify",
+    component: () => import("@/views/auth/verify.vue"),
     meta: { auth: true },
     beforeEnter: guardAuth,
   },
@@ -76,7 +90,7 @@ const routes = [
         },
       },
       {
-        path: "/profile",
+        path: "/profile/:userId",
         name: "profile",
         component: ProfileIndex,
       },
@@ -124,7 +138,7 @@ const routes = [
             },
           },
           {
-            path: "view/:id",
+            path: "view/:name/:id",
             name: "department",
 
             component: () =>

@@ -5,7 +5,7 @@
         <Textinput
           label="Name"
           type="text"
-          placeholder="Type your name"
+          placeholder="Type name of venue"
           name="name"
           v-model="name"
           :error="nameError"
@@ -45,7 +45,7 @@
 
             <div
               @click="pushAccessory(accessories)"
-              class="rounded px-4 btn-primary btn-sm h-[40px] flex items-center justify-center gap-2"
+              class="rounded px-4 btn-dark btn-sm h-[40px] flex items-center justify-center gap-2"
             >
               <Icon icon="heroicons-outline:plus" />
             </div>
@@ -85,7 +85,7 @@
 
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-6">
         <!-- <div class="hidden sm:block"></div> -->
-        <button type="submit" class="btn btn-primary block w-full text-center">
+        <button type="submit" class="btn btn-dark block w-full text-center">
           Save Changes
         </button>
       </div>

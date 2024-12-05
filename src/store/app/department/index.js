@@ -1,10 +1,20 @@
-import { v4 as uuidv4 } from "uuid";
 import { useToast } from "vue-toastification";
+import { DataService } from "@/config/dataService/dataService";
+import { urls } from "@/helpers/apI_urls";
+import { cleanObject } from "@/util/cleanObject";
+
 const toast = useToast();
 export default {
   state: {
     addmodal: false,
+    total: 0,
+    loading: false,
     isLoading: null,
+    fetchsuccess: false,
+    deletesuccess: false,
+    getsuccess: false,
+    addsuccess: false,
+    updatesuccess: false,
     // for edit
     editModal: false,
     editName: "",
@@ -14,79 +24,71 @@ export default {
     editcta: null,
     editId: null,
     editdesc: null,
-
-    departments: [
-      {
-        id: uuidv4(),
-        assignto: [
-          {
-            image: require("@/assets/images/avatar/av-1.svg"),
-            title: "Mahedi Amin",
-          },
-          {
-            image: require("@/assets/images/avatar/av-2.svg"),
-            title: "Sovo Haldar",
-          },
-          {
-            image: require("@/assets/images/avatar/av-2.svg"),
-            title: "Rakibul Islam",
-          },
-        ],
-        name: "Management Dashboard ",
-        des: "Amet minim mollit non deserunt ullamco est sit aliqua dolor do amet sint.",
-        startDate: "2022-10-03",
-        endDate: "2022-10-06",
-        progress: 75,
-        category: [
-          {
-            value: "team",
-            label: "team",
-          },
-          {
-            value: "low",
-            label: "low",
-          },
-        ],
-      },
-      {
-        id: uuidv4(),
-        assignto: [
-          {
-            image: require("@/assets/images/avatar/av-1.svg"),
-            title: "Mahedi Amin",
-          },
-          {
-            image: require("@/assets/images/avatar/av-2.svg"),
-            title: "Sovo Haldar",
-          },
-          {
-            image: require("@/assets/images/avatar/av-2.svg"),
-            title: "Rakibul Islam",
-          },
-        ],
-        name: "Business Dashboard ",
-        des: "Amet minim mollit non deserunt ullamco est sit aliqua dolor do amet sint.",
-        startDate: "2022-10-03",
-        endDate: "2022-10-10",
-        progress: 50,
-
-        category: [
-          {
-            value: "team",
-            label: "team",
-          },
-          {
-            value: "low",
-            label: "low",
-          },
-        ],
-      },
-    ],
+    department: null,
+    departments: [],
   },
   getters: {
     departments: (state) => state.departments,
   },
   mutations: {
+    fetchBegin(state) {
+      state.loading = true;
+      state.error = null;
+      state.fetchsuccess = false;
+    },
+    fetchSuccess(state, { data, totalCount }) {
+      state.loading = false;
+      state.success = true;
+      state.departments = data;
+      state.total = totalCount;
+    },
+    fetchErr(state, err) {
+      state.loading = false;
+      state.error = err;
+      state.success = false;
+    },
+    updateBegin(state) {
+      state.loading = true;
+      state.error = null;
+      state.updatesuccess = false;
+    },
+    updateSuccess(state) {
+      state.loading = false;
+      state.updatesuccess = true;
+    },
+    updateErr(state, err) {
+      state.loading = false;
+      state.error = err;
+      state.updatesuccess = false;
+    },
+    deleteBegin(state) {
+      state.loading = true;
+      state.error = null;
+      state.deletesuccess = false;
+    },
+    deleteSuccess(state) {
+      state.loading = false;
+      state.deletesuccess = true;
+    },
+    deleteErr(state, err) {
+      state.loading = false;
+      state.error = err;
+      state.deletesuccess = false;
+    },
+    addBegin(state) {
+      state.loading = true;
+      state.error = null;
+      state.addsuccess = false;
+    },
+    addSuccess(state) {
+      state.loading = false;
+      state.addsuccess = true;
+    },
+    addErr(state, err) {
+      state.loading = false;
+      state.error = err;
+      state.addsuccess = false;
+    },
     //
     addDepartment(state, data) {
       state.isLoading = true;
@@ -112,27 +114,7 @@ export default {
     },
     // updateDepartment
     updateDepartment(state, data) {
-      state.departments.findIndex((item) => {
-        if (item.id === data.id) {
-          // store data
-          state.editId = data.id;
-          state.editName = data.name;
-          state.editassignto = data.assignto;
-          state.editStartDate = data.startDate;
-          state.editEndDate = data.endDate;
-          state.editcta = data.category;
-          state.editdesc = data.des;
-
-          // set data to data
-          item.name = data.name;
-          item.des = data.des;
-          item.startDate = data.startDate;
-          item.endDate = data.endDate;
-          item.assignto = data.assignto;
-          item.progress = data.progress;
-          item.category = data.category;
-        }
-      });
+      state.department = data;
       state.editModal = true;
     },
     // openDepartment
@@ -149,12 +131,70 @@ export default {
     },
   },
   actions: {
-    addDepartment({ commit }, data) {
-      commit("addDepartment", data);
+    async getDepartments({ commit }, data) {
+      try {
+        commit("fetchBegin");
+        const response = await DataService.get(
+          `${urls.GET_ALL_DEPARTMENT}?${new URLSearchParams(cleanObject(data))}`
+        );
+        if (response.status === 200) {
+          commit("fetchSuccess", response.data);
+        }
+      } catch (err) {
+        commit("fetchErr", err);
+      }
+    },
+    async getDepartmentById({ commit }, id) {
+      try {
+        commit("getBegin");
+        const response = await DataService.get(
+          `${urls.GET_DEPARTMENT_BY_ID}?id=${id}`
+        );
+        if (response.status === 200) {
+          commit("getSuccess", response.data.data);
+        }
+      } catch (err) {
+        commit("getErr", err);
+      }
+    },
+    async addDepartment({ commit }, data) {
+      try {
+        commit("addBegin");
+        const response = await DataService.post(urls.CREATE_DEPARTMENT, data);
+        if (response.status === 200) {
+          commit("addSuccess");
+        }
+      } catch (err) {
+        commit("addErr", err);
+      }
     },
     // removeDepartment
-    removeDepartment({ commit }, data) {
-      commit("removeDepartment", data);
+    async removeDepartment({ commit }, id) {
+      try {
+        commit("deleteBegin");
+        const response = await DataService.delete(
+          `${urls.DELETE_DEPARTMENT}?id=${id}`
+        );
+        if (response.status === 200) {
+          commit("deleteSuccess");
+        }
+      } catch (err) {
+        commit("deleteErr", err);
+      }
+    },
+    async editDepartment({ commit }, data) {
+      try {
+        commit("updateBegin");
+        const response = await DataService.put(
+          `${urls.UPDATE_DEPARTMENT}`,
+          data
+        );
+        if (response.status === 200) {
+          commit("updateSuccess");
+        }
+      } catch (err) {
+        commit("updateErr", err);
+      }
     },
     // updateDepartment
     updateDepartment({ commit }, data) {

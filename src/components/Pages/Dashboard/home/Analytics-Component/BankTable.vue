@@ -180,7 +180,7 @@ export default {
         },
       ],
       options: [
-      {
+        {
           value: "25",
           label: "25",
         },

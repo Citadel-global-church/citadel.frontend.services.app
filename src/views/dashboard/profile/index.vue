@@ -1,5 +1,8 @@
 <template>
-  <div class="space-y-5 profile-page">
+  <span v-if="profileLoading || profileError !== null"
+    ><ProfilePageSkeleton
+  /></span>
+  <div v-else class="space-y-5 profile-page">
     <div
       class="profiel-wrap px-[35px] pb-10 md:pt-[84px] pt-10 rounded-lg bg-white dark:bg-slate-800 lg:flex lg:space-y-0 space-y-6 justify-between items-end relative z-[1]"
     >
@@ -36,10 +39,10 @@
             <div
               class="text-2xl font-medium text-slate-900 dark:text-slate-200 mb-[3px]"
             >
-              Albert Flores
+              {{ profileData?.fullName }}
             </div>
             <div class="text-sm font-light text-slate-600 dark:text-slate-400">
-              Role
+              {{ profileData?.userRole }}
             </div>
           </div>
         </div>
@@ -68,7 +71,7 @@
                   href="mailto:someone@example.com"
                   class="text-base text-slate-600 dark:text-slate-50"
                 >
-                  info-500@dashcode.com
+                  {{ profileData?.email }}
                 </a>
               </div>
             </li>
@@ -89,12 +92,15 @@
                   href="tel:0189749676767"
                   class="text-base text-slate-600 dark:text-slate-50"
                 >
-                  +1-202-555-0151
+                  {{ profileData?.phoneNumber }}
                 </a>
               </div>
             </li>
             <!-- end single list -->
-            <li class="flex space-x-3 rtl:space-x-reverse">
+            <li
+              v-if="profileData?.location"
+              class="flex space-x-3 rtl:space-x-reverse"
+            >
               <div
                 class="flex-none text-2xl text-slate-600 dark:text-slate-300"
               >
@@ -107,7 +113,7 @@
                   LOCATION
                 </div>
                 <div class="text-base text-slate-600 dark:text-slate-50">
-                  Home# 320/N, Road# 71/B, Mohakhali, Dhaka-1207, Bangladesh
+                  {{ profileData?.location }}
                 </div>
               </div>
             </li>
@@ -123,13 +129,39 @@
 </template>
 
 <script setup>
+import ProfilePageSkeleton from "@/components/Pages/Profile/ProfilePageSkeleton.vue";
 import Card from "@/components/Card";
 import Icon from "@/components/Icon";
-import { provide, ref } from "vue";
+import { provide, ref, computed, onMounted, watch } from "vue";
 import Tab from "./tabs/index.vue";
+import { useStore } from "vuex";
+import { useRoute } from "vue-router";
+onMounted(() => {
+  fetchUser();
+});
+const { state, dispatch } = useStore();
+const route = useRoute();
+
+// console.log("Member:" + JSON.stringify(state.member.profile));
+const profileData = computed(() => state.member.profile);
+// const success = computed(() => state.member.profilesuccess);
+const profileLoading = computed(() => state.member.profileloading);
+const profileError = computed(() => state.member.profileerror);
+const userId = computed(() => route.params.userId);
 const isMarried = ref(false);
 
+console.log("route" + userId.value);
+const fetchUser = () => {
+  dispatch("getUserById", userId.value);
+};
+
+watch(userId, () => {
+  fetchUser();
+});
+
 provide("isMarried", isMarried);
+provide("profileData", profileData);
+provide("id", userId);
 </script>
 
 <style lang="scss" scoped></style>
